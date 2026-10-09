@@ -19,6 +19,7 @@ for(const kind of ['history','mode']){
 
 function render(){
   result.textContent=localized();
+  document.getElementById('calculation-status').textContent=routine.issue;
   const expression=document.getElementById('expression');
   expression.textContent=calculator.formattedExpression(document.body.dataset.decimal==='.'?'.':',');
   expression.scrollLeft=expression.scrollWidth;
@@ -36,6 +37,7 @@ function render(){
 function handleKey(key){
  if(routine.phase==='entry'){routine.press(key);render();if(key==='equals')recordResult();return;}
  if(key==='clear'){
+  routine.issue='';
   if(heldClear){heldClear=false;return}
   if(calculator.isEmpty)calculator.reset();else calculator.backspace();
  }else routine.press(key);
@@ -58,7 +60,7 @@ document.addEventListener('click',event=>{
 const keys={'+':'add','-':'subtract','*':'multiply','/':'divide','%':'percent','.':'decimal',',':'decimal','=':'equals',Enter:'equals',Escape:'clear',Delete:'clear'};
 document.addEventListener('keydown',event=>{
   if(document.body.dataset.screen!=='calculator'||event.metaKey||event.ctrlKey||event.altKey||event.target.closest('input,select,textarea'))return;
-  if(event.key==='Backspace'){event.preventDefault();if(routine.phase==='entry')handleKey('clear');else{calculator.backspace();render()}return}
+  if(event.key==='Backspace'){event.preventDefault();if(routine.phase==='entry')handleKey('clear');else{routine.issue='';calculator.backspace();render()}return}
   const key=/^\d$/.test(event.key)?event.key:keys[event.key];
   if(!key)return;event.preventDefault();handleKey(key);
   const button=document.querySelector(`[data-key="${key}"]`);button?.classList.add('pressed');

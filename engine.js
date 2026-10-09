@@ -1,8 +1,10 @@
+import {evaluateExact,finiteDecimal} from './exact.js';
 const operations={add:(a,b)=>a+b,subtract:(a,b)=>a-b,multiply:(a,b)=>a*b,divide:(a,b)=>a/b};
 const symbols={add:'+',subtract:'−',multiply:'×',divide:'÷'};
 const priority={add:1,subtract:1,multiply:2,divide:2};
 const number=value=>Number(value.endsWith('%')?value.slice(0,-1):value)/(value.endsWith('%')?100:1);
 function evaluate(tokens){
+ try{const exact=finiteDecimal(evaluateExact(tokens));if(exact!==null)return Number(exact)}catch{return NaN}
  const values=[],ops=[];
  const reduce=()=>{const op=ops.pop(),right=values.pop(),left=values.pop();values.push(operations[op](left,right))};
  for(const token of tokens){if(operations[token]){while(ops.length&&priority[ops.at(-1)]>=priority[token])reduce();ops.push(token)}else{let value=number(token);if(token.endsWith('%')&&['add','subtract'].includes(ops.at(-1)))value*=values.at(-1);values.push(value)}}
