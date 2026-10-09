@@ -35,7 +35,7 @@ export async function setupScreenshot(render){
  async function activateHome(blob){
   const nextURL=URL.createObjectURL(blob);const img=$('iphone-home-image');
   try{img.src=nextURL;await img.decode()}catch(error){URL.revokeObjectURL(nextURL);throw error}
-  if(homeURL)URL.revokeObjectURL(homeURL);homeURL=nextURL;homeBlob=blob;status();
+  if(homeURL)URL.revokeObjectURL(homeURL);homeURL=nextURL;homeBlob=blob;document.documentElement.style.setProperty('--launcher-image',`url("${homeURL}")`);status();
  }
  function paintButton(){
   const patch=$('clear-skin');patch.hidden=!(acImage&&deleteImage);if(patch.hidden)return;

@@ -89,14 +89,14 @@ function saveForce(showError=true){
 forceNumber.addEventListener('input',()=>saveForce());
 const scene=document.getElementById('calculator-scene');
 let openingTimer=null;
-function goHome(){clearTimeout(openingTimer);scene.classList.remove('opening');document.body.classList.remove('app-opening');document.body.dataset.screen='home';routine.reset(null);render();document.querySelectorAll('.panel').forEach(panel=>panel.hidden=true)}
+function goHome(){clearTimeout(openingTimer);scene.classList.remove('opening');document.body.classList.remove('app-opening');document.documentElement.classList.remove('launcher-background');document.body.dataset.screen='home';routine.reset(null);render();document.querySelectorAll('.panel').forEach(panel=>panel.hidden=true)}
 document.addEventListener('routine-home',goHome);
 document.getElementById('home-settings').addEventListener('click',()=>screenshotUI?.openSettings());
 document.getElementById('start-routine').addEventListener('click',()=>{
  if(!screenshotUI?.hasScreenshot()||!screenshotUI.hasHome()){document.getElementById('home-status').textContent='Añade las tres capturas.';screenshotUI?.openSettings();return}
  if(!saveForce()){screenshotUI.openSettings();forceNumber.focus();return}
  routine.reset(targetNumber());entries.length=0;document.getElementById('history-items').innerHTML='<p>Sin cálculos</p>';
- document.body.dataset.screen='launcher';document.getElementById('settings-open').classList.add('concealed');document.getElementById('home-status').textContent='';render();
+ document.documentElement.classList.add('launcher-background');document.body.dataset.screen='launcher';document.getElementById('settings-open').classList.add('concealed');document.getElementById('home-status').textContent='';render();
 });
 const iphoneHome=document.getElementById('iphone-home');
 iphoneHome.addEventListener('keydown',event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();iphoneHome.click()}});
@@ -104,7 +104,7 @@ iphoneHome.addEventListener('click',event=>{
  if(document.body.dataset.screen!=='launcher')return;
  scene.style.transformOrigin=`${event.clientX}px ${event.clientY}px`;
  document.body.classList.add('app-opening');document.body.dataset.screen='calculator';scene.classList.add('opening');
- openingTimer=setTimeout(()=>{scene.classList.remove('opening');document.body.classList.remove('app-opening')},450);
+ openingTimer=setTimeout(()=>{scene.classList.remove('opening');document.body.classList.remove('app-opening');document.documentElement.classList.remove('launcher-background')},450);
 });
-setupScreenshot(render).then(ui=>{screenshotUI=ui;saveForce(false)});
+setupScreenshot(render).then(ui=>{screenshotUI=ui;saveForce(false);document.getElementById('start-routine').disabled=false});
 if('serviceWorker' in navigator)navigator.serviceWorker.register('./sw.js',{updateViaCache:'none'}).catch(()=>{});

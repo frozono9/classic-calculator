@@ -75,3 +75,9 @@ body[data-screen=launcher] #settings-open{color:transparent}
 #calculator-scene{z-index:1;overflow:hidden}
 body.app-opening #iphone-home{display:block;pointer-events:none;animation:fade-launcher .45s ease-out forwards}
 @keyframes fade-launcher{to{filter:blur(5px);opacity:.45}}
+
+/* Paint the launch image into the root canvas as well as the visible layer,
+   including the iOS standalone area behind the home indicator. */
+html.launcher-background{background:#000 var(--launcher-image) left top / cover no-repeat fixed;min-height:100lvh}
+html.launcher-background body{background:transparent;min-height:100lvh}
+#iphone-home{inset:auto;left:0;top:0;width:100vw;height:100vh;height:100lvh;background:transparent;margin:0;padding:0;border:0}
