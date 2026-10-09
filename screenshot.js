@@ -1,3 +1,4 @@
+class ScreenshotError extends Error {}
 const $=id=>document.getElementById(id);
 const defaults={x:4.1,y:39.4,width:91.8,height:53.3,gapX:2.05,gapY:1.6,resultY:28.4,resultHeight:10,font:20.1,decimal:',',oldLayout:false};
 function openDatabase(){return new Promise((resolve,reject)=>{const request=indexedDB.open('calculator-screenshot',1);request.onupgradeneeded=()=>request.result.createObjectStore('settings');request.onsuccess=()=>resolve(request.result);request.onerror=()=>reject(request.error)})}
@@ -9,9 +10,9 @@ export function detectScreenshot(image){
  const {width:w,height:h}=canvas;const pixels=ctx.getImageData(0,0,w,h).data;
  const lit=(x,y)=>{const i=(Math.floor(y)*w+Math.floor(x))*4;return Math.max(pixels[i],pixels[i+1],pixels[i+2])>28};
  const rows=runs(y=>lit(w*.148,y),Math.floor(h*.35),Math.floor(h*.97),w*.10).slice(-5);
- if(rows.length!==5)throw new Error('Could not detect five button rows. Use a full-screen portrait calculator screenshot.');
+ if(rows.length!==5)throw new ScreenshotError('No se han detectado las cinco filas de botones. Usa una captura completa de la calculadora en vertical.');
  const cols=runs(x=>lit(x,(rows[0][0]+rows[0][1])/2),0,w,w*.10);
- if(cols.length!==4)throw new Error('Could not detect four button columns. Use an uncropped screenshot.');
+ if(cols.length!==4)throw new ScreenshotError('No se han detectado las cuatro columnas de botones. Usa una captura sin recortar.');
  const left=cols[0][0],right=cols[3][1],top=rows[0][0],bottom=rows[4][1];
  const glyph=runs(y=>{let count=0;for(let x=Math.floor(w*.25);x<Math.floor(w*.96);x++){const i=(y*w+x)*4;if(pixels[i]>180&&pixels[i+1]>180&&pixels[i+2]>180)count++}return count>3},Math.floor(top-w*.33),top-8,8);
  const glyphTop=glyph[0]?.[0],glyphBottom=glyph.at(-1)?.[1];
@@ -26,10 +27,10 @@ export async function setupScreenshot(render){
  let saved=null,url=null,acImage=null,deleteImage=null,savedLocally=false;const stage=$('screenshot-stage'),image=$('screenshot-image'),panel=$('settings-panel'),open=$('settings-open');
  async function decodeBlob(blob){const address=URL.createObjectURL(blob);try{const img=new Image();img.src=address;await img.decode();return img}finally{URL.revokeObjectURL(address)}}
  function status(){
-  if(saved?.acBlob&&saved?.deleteBlob)return 'AC and Delete screenshots saved on this device.';
-  if(saved?.acBlob)return 'AC screenshot saved. Add the Delete screenshot.';
-  if(saved?.deleteBlob)return 'Delete screenshot saved. Add the AC screenshot.';
-  return saved?'Existing screenshot preserved. Add AC and Delete versions.':'Add both screenshots before starting.';
+  if(saved?.acBlob&&saved?.deleteBlob)return 'Las capturas con AC y con el botón de borrar están guardadas en este dispositivo.';
+  if(saved?.acBlob)return 'Captura con AC guardada. Añade la captura con el botón de borrar.';
+  if(saved?.deleteBlob)return 'Captura con el botón de borrar guardada. Añade la captura con AC.';
+  return saved?'La captura anterior sigue guardada. Añade las versiones con AC y con el botón de borrar.':'Añade ambas capturas antes de comenzar.';
  }
  function paintButton(){
   const patch=$('clear-skin');patch.hidden=!(acImage&&deleteImage);if(patch.hidden)return;
@@ -60,7 +61,7 @@ export async function setupScreenshot(render){
   acImage=value.acBlob?await decodeBlob(value.acBlob):null;deleteImage=value.deleteBlob?await decodeBlob(value.deleteBlob):null;
   stage.hidden=false;document.body.classList.add('screenshot-mode');$('screenshot-controls').hidden=false;$('screenshot-status').textContent=status();sliders();position();
  }
- async function persist(){savedLocally=false;document.dispatchEvent(new Event('screenshot-storage'));try{await storage('put',saved);savedLocally=true;document.dispatchEvent(new Event('screenshot-storage'));return true}catch{savedLocally=false;$('screenshot-status').textContent='Could not save the screenshot. Device storage may be full.';document.dispatchEvent(new Event('screenshot-storage'));return false}}
+ async function persist(){savedLocally=false;document.dispatchEvent(new Event('screenshot-storage'));try{await storage('put',saved);savedLocally=true;document.dispatchEvent(new Event('screenshot-storage'));return true}catch{savedLocally=false;$('screenshot-status').textContent='No se ha podido guardar la captura. Puede que el almacenamiento del dispositivo esté lleno.';document.dispatchEvent(new Event('screenshot-storage'));return false}}
  open.addEventListener('click',()=>{if(!open.classList.contains('concealed'))panel.hidden=false});
  let hold=null;open.addEventListener('pointerdown',()=>{hold=setTimeout(()=>{if(document.body.dataset.screen==='calculator'){document.dispatchEvent(new Event('routine-home'))}else{panel.hidden=false;open.classList.remove('concealed')}},650)});
  for(const event of ['pointerup','pointercancel','pointerleave'])open.addEventListener(event,()=>clearTimeout(hold));
@@ -73,29 +74,29 @@ export async function setupScreenshot(render){
  $('skin-decimal').addEventListener('change',event=>{saved.config.decimal=event.target.value;position();persist()});
  for(const [id,slot] of [['screenshot-upload','acBlob'],['screenshot-delete-upload','deleteBlob']])$(id).addEventListener('change',async event=>{
   const file=event.target.files[0];if(!file)return;
-  if(file.size>20*1024*1024){$('screenshot-status').textContent='Please choose an image smaller than 20 MB.';return}
+  if(file.size>20*1024*1024){$('screenshot-status').textContent='Elige una imagen de menos de 20 MB.';return}
   try{
-   $('screenshot-status').textContent='Checking screenshot…';const probe=await decodeBlob(file);
-   if(probe.naturalHeight<probe.naturalWidth)throw new Error('Choose a portrait screenshot.');
+   $('screenshot-status').textContent='Comprobando la captura…';const probe=await decodeBlob(file);
+   if(probe.naturalHeight<probe.naturalWidth)throw new ScreenshotError('Elige una captura en vertical.');
    const detected=detectScreenshot(probe);
    const other=slot==='acBlob'?saved?.deleteBlob:saved?.acBlob;
    if(other){
     const otherImage=await decodeBlob(other);const otherConfig=detectScreenshot(otherImage);
-    if(probe.naturalWidth!==otherImage.naturalWidth||probe.naturalHeight!==otherImage.naturalHeight)throw new Error('Both screenshots must have the same dimensions. Take both on the same phone.');
-    if(['x','y','width','height'].some(key=>Math.abs(detected[key]-otherConfig[key])>.4))throw new Error('The buttons moved between screenshots. Take both in the same calculator mode.');
+    if(probe.naturalWidth!==otherImage.naturalWidth||probe.naturalHeight!==otherImage.naturalHeight)throw new ScreenshotError('Ambas capturas deben tener las mismas dimensiones. Hazlas en el mismo móvil.');
+    if(['x','y','width','height'].some(key=>Math.abs(detected[key]-otherConfig[key])>.4))throw new ScreenshotError('Los botones están en posiciones distintas. Haz ambas capturas en el mismo modo de calculadora.');
    }
    const candidate={...(saved||{}),[slot]:file};
    candidate.blob=candidate.acBlob||file;
    if(slot==='acBlob'||!candidate.config)candidate.config=detected;
    savedLocally=false;await activate(candidate);if(await persist())$('screenshot-status').textContent=status();
-  }catch(error){$('screenshot-status').textContent=error.message||'Could not load this image.'}finally{event.target.value=''}
+  }catch(error){$('screenshot-status').textContent=error instanceof ScreenshotError?error.message:'No se ha podido cargar esta imagen.'}finally{event.target.value=''}
  });
  $('remove-screenshot').addEventListener('click',async()=>{
-  try{await storage('delete')}catch{$('screenshot-status').textContent='Could not remove the saved screenshot.';return}
+  try{await storage('delete')}catch{$('screenshot-status').textContent='No se ha podido eliminar la captura guardada.';return}
   saved=null;savedLocally=false;document.dispatchEvent(new Event('screenshot-storage'));acImage=null;deleteImage=null;$('clear-skin').hidden=true;if(url)URL.revokeObjectURL(url);stage.hidden=true;image.removeAttribute('src');document.body.classList.remove('screenshot-mode','show-targets');delete document.body.dataset.resultFont;delete document.body.dataset.decimal;
-  document.querySelector('.calculator').removeAttribute('style');document.querySelector('.display').removeAttribute('style');document.querySelector('.keypad').removeAttribute('style');document.querySelector('.zero').style.gridColumn='';$('history').removeAttribute('style');$('mode').hidden=false;$('mode').style.display='';$('screenshot-controls').hidden=true;$('screenshot-status').textContent='Add your screenshot before starting.';open.classList.remove('concealed');render();
+  document.querySelector('.calculator').removeAttribute('style');document.querySelector('.display').removeAttribute('style');document.querySelector('.keypad').removeAttribute('style');document.querySelector('.zero').style.gridColumn='';$('history').removeAttribute('style');$('mode').hidden=false;$('mode').style.display='';$('screenshot-controls').hidden=true;$('screenshot-status').textContent='Añade las dos capturas antes de comenzar.';open.classList.remove('concealed');render();
  });
  addEventListener('resize',position);
- try{const value=await storage('get');if(value){await activate(value);savedLocally=true;open.classList.add('concealed')}}catch{$('screenshot-status').textContent='Saved screenshot unavailable. Choose it again.'}
+ try{const value=await storage('get');if(value){await activate(value);savedLocally=true;open.classList.add('concealed')}}catch{$('screenshot-status').textContent='La captura guardada no está disponible. Selecciónala de nuevo.'}
  return {isSaved:()=>Boolean(savedLocally&&saved?.acBlob&&saved?.deleteBlob),hasScreenshot:()=>Boolean(saved?.acBlob&&saved?.deleteBlob),openSettings:()=>{panel.hidden=false;open.classList.remove('concealed')}};
 }

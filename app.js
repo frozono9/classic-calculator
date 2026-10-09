@@ -21,7 +21,7 @@ function render(){
   result.textContent=localized();
   document.body.dataset.clearState=calculator.isEmpty?'ac':'delete';
   clear.innerHTML=calculator.isEmpty?'AC':backspaceIcon;
-  clear.setAttribute('aria-label',calculator.isEmpty?'All clear':'Delete last digit');
+  clear.setAttribute('aria-label',calculator.isEmpty?'Borrar todo':'Borrar el último dígito');
   document.querySelectorAll('.operator').forEach(b=>{const selected=false;b.classList.toggle('selected',selected);b.setAttribute('aria-pressed',String(selected))});
   const font=document.body.classList.contains('screenshot-mode')?Number(document.body.dataset.resultFont||18.5):20.1;
   result.style.fontSize=`${font}cqw`;
@@ -82,8 +82,8 @@ try{const saved=JSON.parse(localStorage.getItem('calculator-force')||'{}');force
 function targetNumber(){const text=forceNumber.value.trim().replace(',','.');return /^-?\d+(?:\.\d+)?$/.test(text)?Number(text):NaN}
 function saveForce(){
  const target=targetNumber();const valid=Number.isFinite(target)&&Math.abs(target)<=999999999999&&forceNumber.value.replace(/\D/g,'').length<=12;
- forceStatus.textContent=forceEnabled.checked&&!valid?'Enter a valid force number (up to 12 digits).':'';
- try{localStorage.setItem('calculator-force',JSON.stringify({enabled:forceEnabled.checked,number:forceNumber.value}));forceSaved=true}catch{forceSaved=false;forceStatus.textContent='Settings could not be saved on this device.'}
+ forceStatus.textContent=forceEnabled.checked&&!valid?'Introduce un número válido para forzar (hasta 12 dígitos).':'';
+ try{localStorage.setItem('calculator-force',JSON.stringify({enabled:forceEnabled.checked,number:forceNumber.value}));forceSaved=true}catch{forceSaved=false;forceStatus.textContent='No se han podido guardar los ajustes en este dispositivo.'}
  updateOfflineStatus();
  return valid;
 }
@@ -92,22 +92,22 @@ function goHome(){document.body.dataset.screen='home';routine.reset(null);render
 document.addEventListener('routine-home',goHome);
 document.getElementById('home-settings').addEventListener('click',()=>screenshotUI?.openSettings());
 document.getElementById('start-routine').addEventListener('click',()=>{
- if(!screenshotUI?.hasScreenshot()){document.getElementById('home-status').textContent='Add both AC and Delete screenshots in Settings first.';screenshotUI?.openSettings();return}
+ if(!screenshotUI?.hasScreenshot()){document.getElementById('home-status').textContent='Añade primero las capturas con AC y con el botón de borrar en Ajustes.';screenshotUI?.openSettings();return}
  if(forceEnabled.checked&&!saveForce()){screenshotUI.openSettings();forceNumber.focus();return}
- routine.reset(forceEnabled.checked?targetNumber():null);entries.length=0;document.getElementById('history-items').innerHTML='<p>No calculations</p>';
+ routine.reset(forceEnabled.checked?targetNumber():null);entries.length=0;document.getElementById('history-items').innerHTML='<p>Sin cálculos</p>';
  document.body.dataset.screen='calculator';document.getElementById('settings-open').classList.add('concealed');document.getElementById('home-status').textContent='';render();
 });
 setupScreenshot(render).then(ui=>{screenshotUI=ui;saveForce()});
 
 function updateOfflineStatus(){
- let text='Preparing offline app files…';
+ let text='Guardando la aplicación para usarla sin conexión…';
  if(offlineFilesReady){
-  if(!screenshotUI?.isSaved())text='Save both screenshots in Settings to finish offline setup.';
-  else if(!forceSaved)text='Save your settings to finish offline setup.';
-  else if(forceEnabled.checked&&(!Number.isFinite(targetNumber())||Math.abs(targetNumber())>999999999999||forceNumber.value.replace(/\D/g,'').length>12))text='Enter a valid force number in Settings.';
-  else text='Ready for airplane mode';
+  if(!screenshotUI?.isSaved())text='Guarda ambas capturas en Ajustes para completar la configuración sin conexión.';
+  else if(!forceSaved)text='Guarda los ajustes para completar la configuración sin conexión.';
+  else if(forceEnabled.checked&&(!Number.isFinite(targetNumber())||Math.abs(targetNumber())>999999999999||forceNumber.value.replace(/\D/g,'').length>12))text='Introduce un número válido para forzar en Ajustes.';
+  else text='Listo para el modo avión';
  }
- document.querySelectorAll('[data-offline-status]').forEach(element=>{element.textContent=text;element.classList.toggle('ready',text==='Ready for airplane mode')});
+ document.querySelectorAll('[data-offline-status]').forEach(element=>{element.textContent=text;element.classList.toggle('ready',text==='Listo para el modo avión')});
 }
 function checkOfflineFiles(){
  const worker=navigator.serviceWorker?.controller;if(!worker)return;
@@ -117,5 +117,5 @@ function checkOfflineFiles(){
 document.addEventListener('screenshot-storage',updateOfflineStatus);
 if('serviceWorker' in navigator){
  navigator.serviceWorker.addEventListener('controllerchange',checkOfflineFiles);
- navigator.serviceWorker.register('./sw.js',{updateViaCache:'none'}).then(()=>navigator.serviceWorker.ready).then(checkOfflineFiles).catch(()=>{document.querySelectorAll('[data-offline-status]').forEach(element=>element.textContent='Open once online to save the app for offline use.')});
-}else document.querySelectorAll('[data-offline-status]').forEach(element=>element.textContent='Offline installation is unavailable in this browser.');
+ navigator.serviceWorker.register('./sw.js',{updateViaCache:'none'}).then(()=>navigator.serviceWorker.ready).then(checkOfflineFiles).catch(()=>{document.querySelectorAll('[data-offline-status]').forEach(element=>element.textContent='Abre la aplicación una vez con conexión para guardarla y usarla sin internet.')});
+}else document.querySelectorAll('[data-offline-status]').forEach(element=>element.textContent='Este navegador no permite instalar la aplicación para usarla sin conexión.');
