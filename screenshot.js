@@ -54,6 +54,7 @@ export async function setupScreenshot(render){
   Object.assign(calculator.style,{left:(x+w*c.x/100)+'px',top:(y+h*c.y/100)+'px',width:w*c.width/100+'px',height:h*c.height/100+'px'});
   keypad.style.setProperty('--skin-gap-x',c.gapX+'%');keypad.style.setProperty('--skin-gap-y',c.gapY+'%');
   Object.assign(display.style,{top:h*(c.resultY-c.y)/100+'px',left:'0px',width:'100%',height:h*c.resultHeight/100+'px'});
+  Object.assign($('expression').style,{top:(h*(c.resultY-c.y)/100-w*.145)+'px',left:'0px',width:'100%',height:w*.12+'px'});
   document.body.dataset.resultFont=c.font;document.body.dataset.decimal=c.decimal;
   const mode=$('mode');mode.hidden=c.oldLayout;mode.style.display=c.oldLayout?'none':'';
   document.querySelector('.zero').style.gridColumn=c.oldLayout?'span 2':'';

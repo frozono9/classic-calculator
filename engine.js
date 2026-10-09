@@ -17,7 +17,7 @@ function format(value,decimal){
 }
 export class Calculator{
  constructor(){this.reset()}
- reset(){this.value='0';this.tokens=[];this.operator=null;this.waiting=false;this.repeat=null;this.fresh=true;this.evaluated=false}
+ reset(){this.value='0';this.tokens=[];this.operator=null;this.waiting=false;this.repeat=null;this.fresh=true;this.evaluated=false;this.lastExpression=[]}
  preview(){return evaluate([...this.tokens,this.value])}
  number(){return number(this.value)}
  set(n){this.value=Number.isFinite(n)?String(Number(n.toPrecision(12))):'Error'}
@@ -46,6 +46,7 @@ export class Calculator{
    this.operator=key;this.waiting=true;this.evaluated=false;this.repeat=null;this.fresh=false;return;
   }
   if(key==='equals'){
+   this.lastExpression=this.tokens.length?[...this.tokens,this.value]:this.repeat&&this.evaluated?[this.value,this.repeat.operator,String(this.repeat.right)]:[this.value];
    if(this.tokens.length){
     const expression=[...this.tokens,this.value];
     const lastOperator=expression.at(-2);let right=number(expression.at(-1));
@@ -72,5 +73,7 @@ export class Calculator{
   const tokens=this.waiting?[...this.tokens]:[...this.tokens,this.value];
   return tokens.map(token=>symbols[token]||format(token,decimal)).join('');
  }
+ formattedExpression(decimal='.'){return this.evaluated?this.lastExpression.map(token=>symbols[token]||format(token,decimal)).join(''):''}
+ get showsAC(){return this.isEmpty||this.evaluated||this.value==='Error'}
  get isEmpty(){return this.value==='0'&&this.tokens.length===0}
 }

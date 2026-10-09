@@ -19,9 +19,12 @@ for(const kind of ['history','mode']){
 
 function render(){
   result.textContent=localized();
-  document.body.dataset.clearState=calculator.isEmpty?'ac':'delete';
-  clear.innerHTML=calculator.isEmpty?'AC':backspaceIcon;
-  clear.setAttribute('aria-label',calculator.isEmpty?'Borrar todo':'Borrar el último dígito');
+  const expression=document.getElementById('expression');
+  expression.textContent=calculator.formattedExpression(document.body.dataset.decimal==='.'?'.':',');
+  expression.scrollLeft=expression.scrollWidth;
+  document.body.dataset.clearState=calculator.showsAC?'ac':'delete';
+  clear.innerHTML=calculator.showsAC?'AC':backspaceIcon;
+  clear.setAttribute('aria-label',calculator.showsAC?'Borrar todo':'Borrar el último dígito');
   document.querySelectorAll('.operator').forEach(b=>{const selected=false;b.classList.toggle('selected',selected);b.setAttribute('aria-pressed',String(selected))});
   const font=document.body.classList.contains('screenshot-mode')?Number(document.body.dataset.resultFont||18.5):20.1;
   result.style.fontSize=`${font}cqw`;
