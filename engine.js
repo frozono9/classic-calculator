@@ -18,6 +18,7 @@ function format(value,decimal){
 export class Calculator{
  constructor(){this.reset()}
  reset(){this.value='0';this.tokens=[];this.operator=null;this.waiting=false;this.repeat=null;this.fresh=true;this.evaluated=false}
+ preview(){return evaluate([...this.tokens,this.value])}
  number(){return number(this.value)}
  set(n){this.value=Number.isFinite(n)?String(Number(n.toPrecision(12))):'Error'}
  press(key){

@@ -44,7 +44,7 @@ export async function setupScreenshot(render){
  }
  async function persist(){try{await storage('put',saved)}catch{$('screenshot-status').textContent='Could not save the screenshot. Device storage may be full.'}}
  open.addEventListener('click',()=>{if(!open.classList.contains('concealed'))panel.hidden=false});
- let hold=null;open.addEventListener('pointerdown',()=>{hold=setTimeout(()=>{panel.hidden=false;open.classList.remove('concealed')},650)});
+ let hold=null;open.addEventListener('pointerdown',()=>{hold=setTimeout(()=>{if(document.body.dataset.screen==='calculator'){document.dispatchEvent(new Event('routine-home'))}else{panel.hidden=false;open.classList.remove('concealed')}},650)});
  for(const event of ['pointerup','pointercancel','pointerleave'])open.addEventListener(event,()=>clearTimeout(hold));
  $('settings-close').addEventListener('click',()=>{panel.hidden=true;document.body.classList.remove('show-targets');$('show-targets').checked=false;if(saved)open.classList.add('concealed')});
  $('use-screenshot').addEventListener('click',()=>{panel.hidden=true;open.classList.add('concealed');document.body.classList.remove('show-targets');$('show-targets').checked=false;persist()});
@@ -67,8 +67,9 @@ export async function setupScreenshot(render){
  $('remove-screenshot').addEventListener('click',async()=>{
   try{await storage('delete')}catch{$('screenshot-status').textContent='Could not remove the saved screenshot.';return}
   saved=null;if(url)URL.revokeObjectURL(url);stage.hidden=true;image.removeAttribute('src');document.body.classList.remove('screenshot-mode','show-targets');delete document.body.dataset.resultFont;delete document.body.dataset.decimal;
-  document.querySelector('.calculator').removeAttribute('style');document.querySelector('.display').removeAttribute('style');document.querySelector('.keypad').removeAttribute('style');document.querySelector('.zero').style.gridColumn='';$('history').removeAttribute('style');$('mode').hidden=false;$('mode').style.display='';$('screenshot-controls').hidden=true;$('screenshot-status').textContent='Using the drawn calculator.';open.classList.remove('concealed');render();
+  document.querySelector('.calculator').removeAttribute('style');document.querySelector('.display').removeAttribute('style');document.querySelector('.keypad').removeAttribute('style');document.querySelector('.zero').style.gridColumn='';$('history').removeAttribute('style');$('mode').hidden=false;$('mode').style.display='';$('screenshot-controls').hidden=true;$('screenshot-status').textContent='Add your screenshot before starting.';open.classList.remove('concealed');render();
  });
  addEventListener('resize',position);
  try{const value=await storage('get');if(value){await activate(value);open.classList.add('concealed')}}catch{$('screenshot-status').textContent='Saved screenshot unavailable. Choose it again.'}
+ return {hasScreenshot:()=>Boolean(saved),openSettings:()=>{panel.hidden=false;open.classList.remove('concealed')}};
 }
