@@ -98,7 +98,9 @@ document.getElementById('start-routine').addEventListener('click',()=>{
  routine.reset(targetNumber());entries.length=0;document.getElementById('history-items').innerHTML='<p>Sin cálculos</p>';
  document.body.dataset.screen='launcher';document.getElementById('settings-open').classList.add('concealed');document.getElementById('home-status').textContent='';render();
 });
-document.getElementById('iphone-home').addEventListener('click',event=>{
+const iphoneHome=document.getElementById('iphone-home');
+iphoneHome.addEventListener('keydown',event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();iphoneHome.click()}});
+iphoneHome.addEventListener('click',event=>{
  if(document.body.dataset.screen!=='launcher')return;
  scene.style.transformOrigin=`${event.clientX}px ${event.clientY}px`;
  document.body.classList.add('app-opening');document.body.dataset.screen='calculator';scene.classList.add('opening');
