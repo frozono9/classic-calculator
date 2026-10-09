@@ -25,7 +25,7 @@ export function detectScreenshot(image){
 export async function setupScreenshot(render){
  let saved=null,url=null;const stage=$('screenshot-stage'),image=$('screenshot-image'),panel=$('settings-panel'),open=$('settings-open');
  function position(){
-  if(!saved)return;const c=saved.config;const w=document.documentElement.clientWidth,h=innerHeight,x=0,y=0;
+  if(!saved)return;const c=saved.config;const w=document.documentElement.clientWidth,h=w*image.naturalHeight/image.naturalWidth,x=0,y=0;
   Object.assign(stage.style,{left:x+'px',top:y+'px',width:w+'px',height:h+'px'});
   const calculator=document.querySelector('.calculator');const keypad=document.querySelector('.keypad');const display=document.querySelector('.display');
   Object.assign(calculator.style,{left:(x+w*c.x/100)+'px',top:(y+h*c.y/100)+'px',width:w*c.width/100+'px',height:h*c.height/100+'px'});
