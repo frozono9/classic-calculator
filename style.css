@@ -2,19 +2,25 @@
 *{box-sizing:border-box}
 html,body{margin:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:none;background:#000}
 body{touch-action:manipulation;-webkit-user-select:none;user-select:none}
-.calculator{--gap:3.55cqw;--key:calc((100cqw - 3*var(--gap))/4);container-type:inline-size;position:absolute;width:calc(100% - 13.3vw);max-width:430px;left:50%;transform:translateX(-50%);bottom:calc(env(safe-area-inset-bottom,0px) + 12.8vw);}
-.display{height:31cqw;display:flex;align-items:center;justify-content:flex-end;padding:0 3cqw 1.2cqw;overflow:hidden;touch-action:pan-y}
-#result{font-size:27cqw;font-weight:200;line-height:1.1;letter-spacing:-.8cqw;white-space:nowrap;transform-origin:right center;font-variant-numeric:normal}
+.calculator{--gap:2.05cqw;--key:calc((100cqw - 3*var(--gap))/4);container-type:inline-size;position:absolute;width:calc(100% - 32px);max-width:430px;left:50%;transform:translateX(-50%);bottom:calc(env(safe-area-inset-bottom,0px) + 28px)}
+.display{height:29.8cqw;display:flex;align-items:flex-start;justify-content:flex-end;padding:4.2cqw 0 0 0;overflow:hidden;touch-action:pan-y}
+#result{font-size:20.1cqw;font-weight:400;line-height:1.1;letter-spacing:-.15cqw;white-space:nowrap;transform-origin:right center}
 .keypad{display:grid;grid-template-columns:repeat(4,1fr);gap:var(--gap)}
-button{appearance:none;-webkit-appearance:none;border:0;padding:0;background:#333;color:#fff;border-radius:50%;height:var(--key);font:400 12cqw/1 -apple-system,BlinkMacSystemFont,"Helvetica Neue",sans-serif;display:flex;align-items:center;justify-content:center;cursor:pointer;touch-action:manipulation;outline:none;transition:background-color .35s ease}
-button.utility{background:#a5a5a5;color:#000;font-size:10cqw}
-button.sign{font-size:11cqw}
-button.operator{background:#ff9f0a;font-size:15cqw;font-weight:400}
-button.zero{grid-column:span 2;border-radius:100px;justify-content:flex-start;padding-left:calc((var(--key) - 6.7cqw)/2)}
+button{appearance:none;-webkit-appearance:none;border:0;padding:0;background:#2a2a2c;color:#fff;border-radius:50%;height:var(--key);font:400 10.05cqw/1 -apple-system,BlinkMacSystemFont,"Helvetica Neue",sans-serif;display:flex;align-items:center;justify-content:center;cursor:pointer;touch-action:manipulation;outline:none;transition:background-color .35s ease}
+button.utility{background:#5c5b60;color:#fff;font-size:11.17cqw}
+button.operator{background:#ff9f0a}
+button svg{width:8.1cqw;height:8.1cqw;fill:none;stroke:currentColor;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+button.sign svg{width:10.9cqw;height:10.9cqw;stroke-width:2.5}
+button#clear svg{width:11.4cqw;height:10.1cqw;stroke-width:2.4}
+button.mode svg{width:7cqw;height:10.5cqw}
 button.operator.selected{background:#fff;color:#ff9f0a}
 button:active,button.pressed{background:#737373;transition:none}
-button.utility:active,button.utility.pressed{background:#d9d9d9}
+button.utility:active,button.utility.pressed{background:#8c8b90}
 button.operator:active,button.operator.pressed{background:#ffcc80;color:#fff}
 button:focus-visible{outline:2px solid #fff;outline-offset:3px}
-@media(min-width:600px){.calculator{bottom:calc(env(safe-area-inset-bottom,0px) + 48px);width:min(86.7%,350px)}}
-@media(max-height:650px){.calculator{width:min(86.7%,calc((100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 30px)/1.68));bottom:calc(env(safe-area-inset-bottom,0px) + 18px)}}
+.history-toggle{position:absolute;left:16px;top:calc(env(safe-area-inset-top,0px) + 16px);width:28px;height:28px;border-radius:0;background:transparent;color:#ff9f0a}
+.history-toggle svg{width:24px;height:22px;stroke-width:2}
+.panel{position:fixed;inset:calc(env(safe-area-inset-top,0px) + 54px) 16px auto;max-height:45dvh;overflow:auto;background:#242426;border-radius:18px;padding:20px;z-index:5;font-size:18px;box-shadow:0 8px 40px #000}
+.panel[hidden]{display:none}.panel p{color:#a5a5a5;margin:10px 0}.panel button{font-size:17px;width:auto;height:auto;background:transparent;border-radius:8px;padding:10px;color:#ff9f0a}.panel .entry{color:white;text-align:right;border-bottom:1px solid #444;padding:12px 0}
+@media(min-width:600px){.calculator{width:358px}}
+@media(max-height:650px){.calculator{width:min(calc(100% - 32px),calc((100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 30px)/1.58));bottom:calc(env(safe-area-inset-bottom,0px) + 12px)}}

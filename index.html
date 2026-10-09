@@ -14,21 +14,24 @@
   <link rel="stylesheet" href="./style.css">
 </head>
 <body>
+  <button class="history-toggle" aria-label="History" id="history"><svg viewBox="0 0 26 22" aria-hidden="true"><path d="M8 3h17M8 11h17M8 19h17"/><g fill="currentColor" stroke="none"><circle cx="2" cy="3" r="1.7"/><circle cx="2" cy="11" r="1.7"/><circle cx="2" cy="19" r="1.7"/></g></svg></button>
+  <section class="panel" id="history-panel" hidden aria-label="Calculation history"><strong>History</strong><div id="history-items"><p>No calculations</p></div><button id="close-history">Done</button></section>
+  <section class="panel" id="mode-panel" hidden aria-label="Calculator mode"><strong>Calculator</strong><p>✓ Basic</p><button id="close-mode">Done</button></section>
   <main class="calculator" aria-label="Calculator">
     <div class="display" aria-label="Result" aria-live="polite" aria-atomic="true"><span id="result">0</span></div>
     <div class="keypad">
       <button class="utility" data-key="clear" aria-label="All clear" id="clear">AC</button>
-      <button class="utility sign" data-key="sign" aria-label="Change sign">⁺∕₋</button>
+      <button class="utility sign" data-key="sign" aria-label="Change sign"><svg viewBox="0 0 40 40" aria-hidden="true"><path d="M12 7v9M7.5 11.5h9M30 5L12 35M27 30h10"/></svg></button>
       <button class="utility" data-key="percent" aria-label="Percent">%</button>
-      <button class="operator" data-key="divide" aria-label="Divide">÷</button>
+      <button class="operator" data-key="divide" aria-label="Divide"><svg viewBox="0 0 30 30" aria-hidden="true"><path d="M2 15h26"/><circle cx="15" cy="5" r="1" fill="currentColor"/><circle cx="15" cy="25" r="1" fill="currentColor"/></svg></button>
       <button data-key="7">7</button><button data-key="8">8</button><button data-key="9">9</button>
-      <button class="operator" data-key="multiply" aria-label="Multiply">×</button>
+      <button class="operator" data-key="multiply" aria-label="Multiply"><svg viewBox="0 0 30 30" aria-hidden="true"><path d="m5 5 20 20M25 5 5 25"/></svg></button>
       <button data-key="4">4</button><button data-key="5">5</button><button data-key="6">6</button>
-      <button class="operator" data-key="subtract" aria-label="Subtract">−</button>
+      <button class="operator" data-key="subtract" aria-label="Subtract"><svg viewBox="0 0 30 30" aria-hidden="true"><path d="M2 15h26"/></svg></button>
       <button data-key="1">1</button><button data-key="2">2</button><button data-key="3">3</button>
-      <button class="operator" data-key="add" aria-label="Add">+</button>
-      <button class="zero" data-key="0">0</button><button data-key="decimal" aria-label="Decimal point">.</button>
-      <button class="operator" data-key="equals" aria-label="Equals">=</button>
+      <button class="operator" data-key="add" aria-label="Add"><svg viewBox="0 0 30 30" aria-hidden="true"><path d="M2 15h26M15 2v26"/></svg></button>
+      <button class="mode" id="mode" aria-label="Calculator mode"><svg viewBox="0 0 26 38" aria-hidden="true"><rect x="2" y="2" width="22" height="34" rx="4" fill="currentColor" stroke="none"/><rect x="5" y="5" width="16" height="7" rx="1.5" fill="#2a2a2c" stroke="none"/><g fill="#2a2a2c" stroke="none"><circle cx="7" cy="17" r="2.3"/><circle cx="13" cy="17" r="2.3"/><circle cx="19" cy="17" r="2.3"/><circle cx="7" cy="23" r="2.3"/><circle cx="13" cy="23" r="2.3"/><circle cx="19" cy="23" r="2.3"/><circle cx="7" cy="29" r="2.3"/><circle cx="13" cy="29" r="2.3"/><circle cx="19" cy="29" r="2.3"/><circle cx="7" cy="34" r="2.3"/><circle cx="13" cy="34" r="2.3"/><circle cx="19" cy="34" r="2.3"/></g></svg></button><button class="zero" data-key="0">0</button><button data-key="decimal" aria-label="Decimal comma">,</button>
+      <button class="operator" data-key="equals" aria-label="Equals"><svg viewBox="0 0 30 30" aria-hidden="true"><path d="M4 10h22M4 21h22"/></svg></button>
     </div>
   </main>
   <script type="module" src="./app.js"></script>
