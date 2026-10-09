@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+  <meta name="theme-color" content="#000000">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Calculator">
+  <title>Calculator</title>
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="apple-touch-icon" href="./icon-180.png">
+  <link rel="icon" href="./icon-192.png">
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  <main class="calculator" aria-label="Calculator">
+    <div class="display" aria-label="Result" aria-live="polite" aria-atomic="true"><span id="result">0</span></div>
+    <div class="keypad">
+      <button class="utility" data-key="clear" aria-label="All clear" id="clear">AC</button>
+      <button class="utility sign" data-key="sign" aria-label="Change sign">⁺∕₋</button>
+      <button class="utility" data-key="percent" aria-label="Percent">%</button>
+      <button class="operator" data-key="divide" aria-label="Divide">÷</button>
+      <button data-key="7">7</button><button data-key="8">8</button><button data-key="9">9</button>
+      <button class="operator" data-key="multiply" aria-label="Multiply">×</button>
+      <button data-key="4">4</button><button data-key="5">5</button><button data-key="6">6</button>
+      <button class="operator" data-key="subtract" aria-label="Subtract">−</button>
+      <button data-key="1">1</button><button data-key="2">2</button><button data-key="3">3</button>
+      <button class="operator" data-key="add" aria-label="Add">+</button>
+      <button class="zero" data-key="0">0</button><button data-key="decimal" aria-label="Decimal point">.</button>
+      <button class="operator" data-key="equals" aria-label="Equals">=</button>
+    </div>
+  </main>
+  <script type="module" src="./app.js"></script>
+</body>
+</html>
