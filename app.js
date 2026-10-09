@@ -73,17 +73,18 @@ result.parentElement.addEventListener('pointerdown',event=>{start={x:event.clien
 result.parentElement.addEventListener('pointerup',event=>{if(routine.phase!=='entry'&&start&&Math.abs(event.clientX-start.x)>35&&Math.abs(event.clientY-start.y)<40){calculator.backspace();render()}start=null});
 result.parentElement.addEventListener('contextmenu',event=>{event.preventDefault();navigator.clipboard?.writeText(calculator.value).catch(()=>{})});
 new ResizeObserver(render).observe(result.parentElement);
-if('serviceWorker' in navigator)navigator.serviceWorker.register('./sw.js',{updateViaCache:'none'}).catch(console.error);
+
 render();
 
-let screenshotUI=null;
+let screenshotUI=null,offlineFilesReady=false,forceSaved=false;
 const forceEnabled=document.getElementById('force-enabled'),forceNumber=document.getElementById('force-number'),forceStatus=document.getElementById('force-status');
 try{const saved=JSON.parse(localStorage.getItem('calculator-force')||'{}');forceEnabled.checked=Boolean(saved.enabled);forceNumber.value=saved.number||''}catch{}
 function targetNumber(){const text=forceNumber.value.trim().replace(',','.');return /^-?\d+(?:\.\d+)?$/.test(text)?Number(text):NaN}
 function saveForce(){
  const target=targetNumber();const valid=Number.isFinite(target)&&Math.abs(target)<=999999999999&&forceNumber.value.replace(/\D/g,'').length<=12;
  forceStatus.textContent=forceEnabled.checked&&!valid?'Enter a valid force number (up to 12 digits).':'';
- try{localStorage.setItem('calculator-force',JSON.stringify({enabled:forceEnabled.checked,number:forceNumber.value}))}catch{forceStatus.textContent='Settings could not be saved on this device.'}
+ try{localStorage.setItem('calculator-force',JSON.stringify({enabled:forceEnabled.checked,number:forceNumber.value}));forceSaved=true}catch{forceSaved=false;forceStatus.textContent='Settings could not be saved on this device.'}
+ updateOfflineStatus();
  return valid;
 }
 forceEnabled.addEventListener('change',saveForce);forceNumber.addEventListener('input',saveForce);
@@ -97,3 +98,24 @@ document.getElementById('start-routine').addEventListener('click',()=>{
  document.body.dataset.screen='calculator';document.getElementById('settings-open').classList.add('concealed');document.getElementById('home-status').textContent='';render();
 });
 setupScreenshot(render).then(ui=>{screenshotUI=ui;saveForce()});
+
+function updateOfflineStatus(){
+ let text='Preparing offline app files…';
+ if(offlineFilesReady){
+  if(!screenshotUI?.isSaved())text='Save both screenshots in Settings to finish offline setup.';
+  else if(!forceSaved)text='Save your settings to finish offline setup.';
+  else if(forceEnabled.checked&&(!Number.isFinite(targetNumber())||Math.abs(targetNumber())>999999999999||forceNumber.value.replace(/\D/g,'').length>12))text='Enter a valid force number in Settings.';
+  else text='Ready for airplane mode';
+ }
+ document.querySelectorAll('[data-offline-status]').forEach(element=>{element.textContent=text;element.classList.toggle('ready',text==='Ready for airplane mode')});
+}
+function checkOfflineFiles(){
+ const worker=navigator.serviceWorker?.controller;if(!worker)return;
+ const channel=new MessageChannel();channel.port1.onmessage=event=>{offlineFilesReady=event.data.ready===true;updateOfflineStatus();channel.port1.close()};
+ worker.postMessage({type:'OFFLINE_STATUS'},[channel.port2]);
+}
+document.addEventListener('screenshot-storage',updateOfflineStatus);
+if('serviceWorker' in navigator){
+ navigator.serviceWorker.addEventListener('controllerchange',checkOfflineFiles);
+ navigator.serviceWorker.register('./sw.js',{updateViaCache:'none'}).then(()=>navigator.serviceWorker.ready).then(checkOfflineFiles).catch(()=>{document.querySelectorAll('[data-offline-status]').forEach(element=>element.textContent='Open once online to save the app for offline use.')});
+}else document.querySelectorAll('[data-offline-status]').forEach(element=>element.textContent='Offline installation is unavailable in this browser.');

@@ -15,12 +15,12 @@
 </head>
 <body data-screen="home">
   <section id="home-page" aria-label="Home">
-    <div class="home-content"><p class="home-eyebrow">CALCULATOR</p><h1>Ready when you are.</h1><button id="start-routine">Start</button><button id="home-settings">Settings</button><p id="home-status" role="status"></p></div>
+    <div class="home-content"><p class="home-eyebrow">CALCULATOR</p><h1>Ready when you are.</h1><button id="start-routine">Start</button><button id="home-settings">Settings</button><p id="home-status" role="status"></p><p class="offline-status" data-offline-status role="status">Checking offline setup…</p></div>
   </section>
   <div id="screenshot-stage" hidden aria-hidden="true"><img id="screenshot-image" alt=""><div id="clear-skin" hidden><canvas id="clear-ac-image"></canvas><canvas id="clear-delete-image"></canvas></div><div class="status-mask"></div><div class="home-mask"></div></div>
   <button id="settings-open" aria-label="Calculator settings">⚙</button>
   <section id="settings-panel" class="panel settings" hidden aria-label="Calculator settings">
-    <h2>Settings</h2>
+    <h2>Settings</h2><p class="offline-status" data-offline-status role="status">Checking offline setup…</p>
     <fieldset class="force-settings"><legend>Routine</legend>
       <label class="check"><input id="force-enabled" type="checkbox"> Force final result</label>
       <label>Force number<input id="force-number" type="text" inputmode="decimal" placeholder="1000" autocomplete="off"></label>
