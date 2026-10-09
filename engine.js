@@ -59,7 +59,13 @@ export class Calculator{
  backspace(){
   if(this.evaluated||this.value==='Error'){this.reset();return}
   if(this.waiting){this.tokens.pop();this.value=this.tokens.pop()||'0';this.waiting=false;this.operator=null}
-  else{this.value=this.value.slice(0,-1);if(!this.value||this.value==='-')this.value='0'}
+  else{
+   this.value=this.value.slice(0,-1);
+   if(!this.value||this.value==='-'){
+    if(this.tokens.length){this.value=this.tokens.at(-2);this.waiting=true;this.operator=this.tokens.at(-1)}
+    else this.value='0';
+   }
+  }
   this.fresh=this.tokens.length===0&&this.value==='0';this.repeat=null;
  }
  formatted(decimal='.'){

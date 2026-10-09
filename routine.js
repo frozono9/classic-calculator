@@ -4,7 +4,7 @@ export class ForceRoutine{
  reset(target){this.target=Number.isFinite(target)?target:null;this.phase='normal';this.remainder='';this.index=0;this.used=false;this.calculator.reset()}
  press(key){
   if(this.phase==='entry'){
-   if(key==='clear'){this.delete();return;}
+   if(key==='clear')return;
    if(key==='equals'){
     this.calculator.value=this.remainder;this.calculator.waiting=false;
     this.calculator.press('equals');this.calculator.set(this.target);
@@ -21,14 +21,6 @@ export class ForceRoutine{
    }
   }
   c.press(key);
- }
- delete(){
-  if(this.phase!=='entry')return;
-  if(this.index===0){this.phase='normal';this.calculator.backspace();return}
-  this.index--;
-  while(this.index>0&&!/\d/.test(this.remainder[this.index-1]))this.index--;
-  this.calculator.value=this.index?this.remainder.slice(0,this.index):'0';
-  this.calculator.waiting=this.index===0;this.calculator.operator=this.index===0?'add':null;
  }
  tap(){
   if(this.phase!=='entry')return;
