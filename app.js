@@ -49,5 +49,5 @@ result.parentElement.addEventListener('pointerdown',event=>{start={x:event.clien
 result.parentElement.addEventListener('pointerup',event=>{if(start&&Math.abs(event.clientX-start.x)>35&&Math.abs(event.clientY-start.y)<40){calculator.backspace();render()}start=null});
 result.parentElement.addEventListener('contextmenu',event=>{event.preventDefault();navigator.clipboard?.writeText(calculator.value).catch(()=>{})});
 new ResizeObserver(render).observe(result.parentElement);
-if('serviceWorker' in navigator)navigator.serviceWorker.register('./sw.js').catch(console.error);
+if('serviceWorker' in navigator)navigator.serviceWorker.register('./sw.js',{updateViaCache:'none'}).catch(console.error);
 render();
