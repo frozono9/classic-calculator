@@ -33,10 +33,16 @@ button:focus-visible{outline:2px solid #fff;outline-offset:3px}
 .screenshot-mode .keypad{position:absolute;display:grid;width:100%;height:100%;gap:var(--skin-gap-y) var(--skin-gap-x);grid-template-rows:repeat(5,1fr)}
 .screenshot-mode .keypad button{height:auto;width:100%;background:transparent!important;color:transparent!important;transition:none;position:relative}
 .screenshot-mode .keypad button>*{visibility:hidden}
-.screenshot-mode .keypad button:active::after{content:'';position:absolute;inset:0;border-radius:50%;background:#fff2}
-.screenshot-mode .keypad button.selected::after{content:'';position:absolute;inset:0;border:2px solid #ffffff80;border-radius:50%}
+.screenshot-mode .keypad button::after{content:'';position:absolute;inset:0;border-radius:inherit;background:#fff;opacity:0;transition:opacity .35s ease-out;pointer-events:none}
+.screenshot-mode .keypad button.pressed::after,.screenshot-mode .keypad button:active::after{opacity:.36;transition:none}
+.screenshot-mode .keypad button.operator.pressed::after,.screenshot-mode .keypad button.operator:active::after{opacity:.32}
+
 .screenshot-mode .display{position:absolute;background:#000;justify-content:flex-end;align-items:center;padding:0 0 0 8px;height:auto;overflow:hidden}
 .screenshot-mode #result{letter-spacing:-.15cqw;font-weight:400;line-height:1.05}
 .screenshot-mode .history-toggle{background:transparent;color:transparent;z-index:2}.screenshot-mode .history-toggle>*{visibility:hidden}
 .screenshot-mode.show-targets .keypad button{background:#00bfff25!important;outline:1px solid #00bfff}
 .screenshot-mode.show-targets .display{outline:1px solid #ff9f0a}
+
+.display{justify-content:safe flex-end;scrollbar-width:none}.display::-webkit-scrollbar{display:none}#result{flex-shrink:0}.display.overflowing,.screenshot-mode .display.overflowing{justify-content:flex-start}
+
+.screenshot-mode .zero[style*="span 2"]{border-radius:100px}

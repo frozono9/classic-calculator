@@ -6,7 +6,7 @@ const clear=document.querySelector('#clear');
 const backspaceIcon='<svg viewBox="0 0 40 36" aria-hidden="true"><path d="M16 3h19a3 3 0 0 1 3 3v24a3 3 0 0 1-3 3H16a4 4 0 0 1-3-1.5L2 20a3 3 0 0 1 0-4L13 4.5A4 4 0 0 1 16 3Z"/><path d="m18 12 12 12M30 12 18 24"/></svg>';
 const entries=[];
 let clearTimer=null, heldClear=false;
-function localized(){return document.body.dataset.decimal==='.'?calculator.formatted():calculator.formatted().replace(/,/g,'·').replace('.',',').replace(/·/g,'.')}
+function localized(){return calculator.formatted(document.body.dataset.decimal==='.'?'.':',')}
 clear.addEventListener('pointerdown',()=>{heldClear=false;clearTimer=setTimeout(()=>{heldClear=true;calculator.reset();render()},500)});
 for(const event of ['pointerup','pointercancel','pointerleave'])clear.addEventListener(event,()=>clearTimeout(clearTimer));
 for(const kind of ['history','mode']){
@@ -17,19 +17,21 @@ for(const kind of ['history','mode']){
 
 function render(){
   result.textContent=localized();
-  clear.innerHTML=calculator.value==='0'?'AC':backspaceIcon;
-  clear.setAttribute('aria-label',calculator.value==='0'?'All clear':'Delete last digit');
-  document.querySelectorAll('.operator').forEach(b=>{const selected=b.dataset.key===calculator.operator&&calculator.waiting;b.classList.toggle('selected',selected);b.setAttribute('aria-pressed',String(selected))});
+  clear.innerHTML=calculator.isEmpty?'AC':backspaceIcon;
+  clear.setAttribute('aria-label',calculator.isEmpty?'All clear':'Delete last digit');
+  document.querySelectorAll('.operator').forEach(b=>{const selected=false;b.classList.toggle('selected',selected);b.setAttribute('aria-pressed',String(selected))});
   const font=document.body.classList.contains('screenshot-mode')?Number(document.body.dataset.resultFont||18.5):20.1;
   result.style.fontSize=`${font}cqw`;
   const available=result.parentElement.clientWidth-parseFloat(getComputedStyle(result.parentElement).paddingLeft)*2;
-  if(result.scrollWidth>available)result.style.fontSize=`${font*available/result.scrollWidth}cqw`;
+  if(result.scrollWidth>available){const fitted=font*available/result.scrollWidth;result.style.fontSize=`${calculator.tokens.length?Math.max(font*.75,fitted):fitted}cqw`}
+  result.parentElement.classList.toggle('overflowing',result.scrollWidth>available);
+  result.parentElement.scrollLeft=result.parentElement.scrollWidth;
 }
 document.querySelector('.keypad').addEventListener('click',event=>{
  const button=event.target.closest('button');const key=button?.dataset.key;if(!key)return;
  if(key==='clear'){
   if(heldClear){heldClear=false;return}
-  if(calculator.value==='0'||calculator.waiting)calculator.reset();else calculator.backspace();
+  if(calculator.isEmpty)calculator.reset();else calculator.backspace();
  }else calculator.press(key);
  render();
  if(key==='equals'){
@@ -44,8 +46,16 @@ document.addEventListener('keydown',event=>{
   if(event.key==='Backspace'){event.preventDefault();calculator.backspace();render();return}
   const key=/^\d$/.test(event.key)?event.key:keys[event.key];
   if(!key)return;event.preventDefault();calculator.press(key);render();
-  const button=document.querySelector(`[data-key="${key}"]`);button?.classList.add('pressed');setTimeout(()=>button?.classList.remove('pressed'),110);
+  const button=document.querySelector(`[data-key="${key}"]`);button?.classList.add('pressed');
 });
+const keypad=document.querySelector('.keypad');
+keypad.addEventListener('pointerdown',event=>{
+ const button=event.target.closest('button');if(!button)return;
+ button.classList.add('pressed');button.setPointerCapture(event.pointerId);
+});
+function releaseButtons(){document.querySelectorAll('.keypad .pressed').forEach(button=>button.classList.remove('pressed'))}
+for(const event of ['pointerup','pointercancel','keyup'])document.addEventListener(event,releaseButtons);
+addEventListener('blur',releaseButtons);
 let start=null;
 result.parentElement.addEventListener('pointerdown',event=>{start={x:event.clientX,y:event.clientY}});
 result.parentElement.addEventListener('pointerup',event=>{if(start&&Math.abs(event.clientX-start.x)>35&&Math.abs(event.clientY-start.y)<40){calculator.backspace();render()}start=null});
