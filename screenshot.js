@@ -2,7 +2,7 @@ class ScreenshotError extends Error {}
 const $=id=>document.getElementById(id);
 const defaults={x:4.1,y:39.4,width:91.8,height:53.3,gapX:2.05,gapY:1.6,resultY:28.4,resultHeight:10,font:20.1,decimal:',',oldLayout:false};
 function openDatabase(){return new Promise((resolve,reject)=>{const request=indexedDB.open('calculator-screenshot',1);request.onupgradeneeded=()=>request.result.createObjectStore('settings');request.onsuccess=()=>resolve(request.result);request.onerror=()=>reject(request.error)})}
-async function storage(action,value){const db=await openDatabase();return new Promise((resolve,reject)=>{const tx=db.transaction('settings',action==='get'?'readonly':'readwrite');const store=tx.objectStore('settings');const request=action==='get'?store.get('skin'):action==='delete'?store.delete('skin'):store.put(value,'skin');tx.oncomplete=()=>{resolve(request.result);db.close()};tx.onerror=()=>{reject(tx.error);db.close()}})}
+async function storage(action,value,key='skin'){const db=await openDatabase();return new Promise((resolve,reject)=>{const tx=db.transaction('settings',action==='get'?'readonly':'readwrite');const store=tx.objectStore('settings');const request=action==='get'?store.get(key):action==='delete'?store.delete(key):store.put(value,key);tx.oncomplete=()=>{resolve(request.result);db.close()};tx.onerror=()=>{reject(tx.error);db.close()}})}
 function runs(test,start,end,min){const output=[];let first=null;for(let n=start;n<=end;n++){if(n<end&&test(n)){if(first===null)first=n}else if(first!==null){if(n-first>=min)output.push([first,n]);first=null}}return output}
 export function detectScreenshot(image){
  const canvas=document.createElement('canvas');const scale=Math.min(1,1170/image.naturalWidth);canvas.width=Math.round(image.naturalWidth*scale);canvas.height=Math.round(image.naturalHeight*scale);
@@ -24,13 +24,18 @@ export function detectScreenshot(image){
  return config;
 }
 export async function setupScreenshot(render){
- let saved=null,url=null,acImage=null,deleteImage=null,savedLocally=false;const stage=$('screenshot-stage'),image=$('screenshot-image'),panel=$('settings-panel'),open=$('settings-open');
+ let saved=null,url=null,acImage=null,deleteImage=null,savedLocally=false,homeBlob=null,homeURL=null,homeSaved=false;const stage=$('screenshot-stage'),image=$('screenshot-image'),panel=$('settings-panel'),open=$('settings-open');
  async function decodeBlob(blob){const address=URL.createObjectURL(blob);try{const img=new Image();img.src=address;await img.decode();return img}finally{URL.revokeObjectURL(address)}}
  function status(){
-  if(saved?.acBlob&&saved?.deleteBlob)return 'Las capturas con AC y con el botón de borrar están guardadas en este dispositivo.';
-  if(saved?.acBlob)return 'Captura con AC guardada. Añade la captura con el botón de borrar.';
-  if(saved?.deleteBlob)return 'Captura con el botón de borrar guardada. Añade la captura con AC.';
-  return saved?'La captura anterior sigue guardada. Añade las versiones con AC y con el botón de borrar.':'Añade ambas capturas antes de comenzar.';
+  $('ac-upload-label').textContent='Calculadora · AC'+(saved?.acBlob?' ✓':'');
+  $('delete-upload-label').textContent='Calculadora · Borrar'+(saved?.deleteBlob?' ✓':'');
+  $('home-upload-label').textContent='Inicio del iPhone'+(homeBlob?' ✓':'');
+  return '';
+ }
+ async function activateHome(blob){
+  const nextURL=URL.createObjectURL(blob);const img=$('iphone-home-image');
+  try{img.src=nextURL;await img.decode()}catch(error){URL.revokeObjectURL(nextURL);throw error}
+  if(homeURL)URL.revokeObjectURL(homeURL);homeURL=nextURL;homeBlob=blob;status();
  }
  function paintButton(){
   const patch=$('clear-skin');patch.hidden=!(acImage&&deleteImage);if(patch.hidden)return;
@@ -55,23 +60,24 @@ export async function setupScreenshot(render){
   const history=$('history');history.style.display=c.history?'':'none';if(c.history)Object.assign(history.style,{left:(x+w*c.history.x/100-3)+'px',top:(y+h*c.history.y/100-3)+'px'});
   paintButton();render();
  }
- function sliders(){for(const key of ['x','y','width','height','resultY','resultHeight','font']){const input=$('skin-'+key);input.value=saved.config[key];input.nextElementSibling.textContent=Number(saved.config[key]).toFixed(1)+'%'}$('skin-decimal').value=saved.config.decimal}
  async function activate(value){
   if(url)URL.revokeObjectURL(url);saved=value;url=URL.createObjectURL(value.acBlob||value.blob);image.src=url;await image.decode();
   acImage=value.acBlob?await decodeBlob(value.acBlob):null;deleteImage=value.deleteBlob?await decodeBlob(value.deleteBlob):null;
-  stage.hidden=false;document.body.classList.add('screenshot-mode');$('screenshot-controls').hidden=false;$('screenshot-status').textContent=status();sliders();position();
+  stage.hidden=false;document.body.classList.add('screenshot-mode');$('screenshot-status').textContent=status();position();
  }
  async function persist(){savedLocally=false;document.dispatchEvent(new Event('screenshot-storage'));try{await storage('put',saved);savedLocally=true;document.dispatchEvent(new Event('screenshot-storage'));return true}catch{savedLocally=false;$('screenshot-status').textContent='No se ha podido guardar la captura. Puede que el almacenamiento del dispositivo esté lleno.';document.dispatchEvent(new Event('screenshot-storage'));return false}}
  open.addEventListener('click',()=>{if(!open.classList.contains('concealed'))panel.hidden=false});
- let hold=null;open.addEventListener('pointerdown',()=>{hold=setTimeout(()=>{if(document.body.dataset.screen==='calculator'){document.dispatchEvent(new Event('routine-home'))}else{panel.hidden=false;open.classList.remove('concealed')}},650)});
+ let hold=null;open.addEventListener('pointerdown',()=>{hold=setTimeout(()=>{if(['calculator','launcher'].includes(document.body.dataset.screen)){document.dispatchEvent(new Event('routine-home'))}else{panel.hidden=false;open.classList.remove('concealed')}},650)});
  for(const event of ['pointerup','pointercancel','pointerleave'])open.addEventListener(event,()=>clearTimeout(hold));
- $('settings-close').addEventListener('click',()=>{panel.hidden=true;document.body.classList.remove('show-targets');$('show-targets').checked=false;if(saved)open.classList.add('concealed')});
- $('use-screenshot').addEventListener('click',()=>{panel.hidden=true;open.classList.add('concealed');document.body.classList.remove('show-targets');$('show-targets').checked=false;persist()});
- $('show-targets').addEventListener('change',event=>document.body.classList.toggle('show-targets',event.target.checked));
- for(const key of ['x','y','width','height','resultY','resultHeight','font']){
-  const input=$('skin-'+key);input.addEventListener('input',()=>{saved.config[key]=Number(input.value);input.nextElementSibling.textContent=Number(input.value).toFixed(1)+'%';position()});input.addEventListener('change',persist);
- }
- $('skin-decimal').addEventListener('change',event=>{saved.config.decimal=event.target.value;position();persist()});
+ $('settings-close').addEventListener('click',()=>{panel.hidden=true;if(saved)open.classList.add('concealed')});
+ $('home-screenshot-upload').addEventListener('change',async event=>{
+  const file=event.target.files[0];if(!file)return;
+  try{
+   if(file.size>20*1024*1024)throw new ScreenshotError('Elige una imagen de menos de 20 MB.');
+   const probe=await decodeBlob(file);if(probe.naturalHeight<probe.naturalWidth)throw new ScreenshotError('Elige una captura en vertical.');
+   homeSaved=false;await storage('put',file,'home');await activateHome(file);homeSaved=true;$('screenshot-status').textContent='';
+  }catch(error){$('screenshot-status').textContent=error instanceof ScreenshotError?error.message:'No se ha podido guardar la captura de inicio.'}finally{event.target.value=''}
+ });
  for(const [id,slot] of [['screenshot-upload','acBlob'],['screenshot-delete-upload','deleteBlob']])$(id).addEventListener('change',async event=>{
   const file=event.target.files[0];if(!file)return;
   if(file.size>20*1024*1024){$('screenshot-status').textContent='Elige una imagen de menos de 20 MB.';return}
@@ -91,12 +97,8 @@ export async function setupScreenshot(render){
    savedLocally=false;await activate(candidate);if(await persist())$('screenshot-status').textContent=status();
   }catch(error){$('screenshot-status').textContent=error instanceof ScreenshotError?error.message:'No se ha podido cargar esta imagen.'}finally{event.target.value=''}
  });
- $('remove-screenshot').addEventListener('click',async()=>{
-  try{await storage('delete')}catch{$('screenshot-status').textContent='No se ha podido eliminar la captura guardada.';return}
-  saved=null;savedLocally=false;document.dispatchEvent(new Event('screenshot-storage'));acImage=null;deleteImage=null;$('clear-skin').hidden=true;if(url)URL.revokeObjectURL(url);stage.hidden=true;image.removeAttribute('src');document.body.classList.remove('screenshot-mode','show-targets');delete document.body.dataset.resultFont;delete document.body.dataset.decimal;
-  document.querySelector('.calculator').removeAttribute('style');document.querySelector('.display').removeAttribute('style');document.querySelector('.keypad').removeAttribute('style');document.querySelector('.zero').style.gridColumn='';$('history').removeAttribute('style');$('mode').hidden=false;$('mode').style.display='';$('screenshot-controls').hidden=true;$('screenshot-status').textContent='Añade las dos capturas antes de comenzar.';open.classList.remove('concealed');render();
- });
  addEventListener('resize',position);
+ try{const home=await storage('get',undefined,'home');if(home){await activateHome(home);homeSaved=true}}catch{$('screenshot-status').textContent='Vuelve a añadir la captura de inicio.'}
  try{const value=await storage('get');if(value){await activate(value);savedLocally=true;open.classList.add('concealed')}}catch{$('screenshot-status').textContent='La captura guardada no está disponible. Selecciónala de nuevo.'}
- return {isSaved:()=>Boolean(savedLocally&&saved?.acBlob&&saved?.deleteBlob),hasScreenshot:()=>Boolean(saved?.acBlob&&saved?.deleteBlob),openSettings:()=>{panel.hidden=false;open.classList.remove('concealed')}};
+ return {isSaved:()=>Boolean(savedLocally&&saved?.acBlob&&saved?.deleteBlob&&homeSaved),hasHome:()=>Boolean(homeBlob),hasScreenshot:()=>Boolean(saved?.acBlob&&saved?.deleteBlob),openSettings:()=>{panel.hidden=false;open.classList.remove('concealed')}};
 }

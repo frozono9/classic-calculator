@@ -76,46 +76,33 @@ new ResizeObserver(render).observe(result.parentElement);
 
 render();
 
-let screenshotUI=null,offlineFilesReady=false,forceSaved=false;
-const forceEnabled=document.getElementById('force-enabled'),forceNumber=document.getElementById('force-number'),forceStatus=document.getElementById('force-status');
-try{const saved=JSON.parse(localStorage.getItem('calculator-force')||'{}');forceEnabled.checked=Boolean(saved.enabled);forceNumber.value=saved.number||''}catch{}
+let screenshotUI=null;
+const forceNumber=document.getElementById('force-number'),forceStatus=document.getElementById('force-status');
+try{const saved=JSON.parse(localStorage.getItem('calculator-force')||'{}');forceNumber.value=saved.number||''}catch{}
 function targetNumber(){const text=forceNumber.value.trim().replace(',','.');return /^-?\d+(?:\.\d+)?$/.test(text)?Number(text):NaN}
-function saveForce(){
+function saveForce(showError=true){
  const target=targetNumber();const valid=Number.isFinite(target)&&Math.abs(target)<=999999999999&&forceNumber.value.replace(/\D/g,'').length<=12;
- forceStatus.textContent=forceEnabled.checked&&!valid?'Introduce un número válido para forzar (hasta 12 dígitos).':'';
- try{localStorage.setItem('calculator-force',JSON.stringify({enabled:forceEnabled.checked,number:forceNumber.value}));forceSaved=true}catch{forceSaved=false;forceStatus.textContent='No se han podido guardar los ajustes en este dispositivo.'}
- updateOfflineStatus();
+ forceStatus.textContent=showError&&!valid?'Introduce un número válido (hasta 12 dígitos).':'';
+ try{localStorage.setItem('calculator-force',JSON.stringify({enabled:true,number:forceNumber.value}))}catch{forceStatus.textContent='No se han podido guardar los ajustes.';return false}
  return valid;
 }
-forceEnabled.addEventListener('change',saveForce);forceNumber.addEventListener('input',saveForce);
-function goHome(){document.body.dataset.screen='home';routine.reset(null);render();document.querySelectorAll('.panel').forEach(panel=>panel.hidden=true);document.body.classList.remove('show-targets')}
+forceNumber.addEventListener('input',()=>saveForce());
+const scene=document.getElementById('calculator-scene');
+let openingTimer=null;
+function goHome(){clearTimeout(openingTimer);scene.classList.remove('opening');document.body.classList.remove('app-opening');document.body.dataset.screen='home';routine.reset(null);render();document.querySelectorAll('.panel').forEach(panel=>panel.hidden=true)}
 document.addEventListener('routine-home',goHome);
 document.getElementById('home-settings').addEventListener('click',()=>screenshotUI?.openSettings());
 document.getElementById('start-routine').addEventListener('click',()=>{
- if(!screenshotUI?.hasScreenshot()){document.getElementById('home-status').textContent='Añade primero las capturas con AC y con el botón de borrar en Ajustes.';screenshotUI?.openSettings();return}
- if(forceEnabled.checked&&!saveForce()){screenshotUI.openSettings();forceNumber.focus();return}
- routine.reset(forceEnabled.checked?targetNumber():null);entries.length=0;document.getElementById('history-items').innerHTML='<p>Sin cálculos</p>';
- document.body.dataset.screen='calculator';document.getElementById('settings-open').classList.add('concealed');document.getElementById('home-status').textContent='';render();
+ if(!screenshotUI?.hasScreenshot()||!screenshotUI.hasHome()){document.getElementById('home-status').textContent='Añade las tres capturas.';screenshotUI?.openSettings();return}
+ if(!saveForce()){screenshotUI.openSettings();forceNumber.focus();return}
+ routine.reset(targetNumber());entries.length=0;document.getElementById('history-items').innerHTML='<p>Sin cálculos</p>';
+ document.body.dataset.screen='launcher';document.getElementById('settings-open').classList.add('concealed');document.getElementById('home-status').textContent='';render();
 });
-setupScreenshot(render).then(ui=>{screenshotUI=ui;saveForce()});
-
-function updateOfflineStatus(){
- let text='Guardando la aplicación para usarla sin conexión…';
- if(offlineFilesReady){
-  if(!screenshotUI?.isSaved())text='Guarda ambas capturas en Ajustes para completar la configuración sin conexión.';
-  else if(!forceSaved)text='Guarda los ajustes para completar la configuración sin conexión.';
-  else if(forceEnabled.checked&&(!Number.isFinite(targetNumber())||Math.abs(targetNumber())>999999999999||forceNumber.value.replace(/\D/g,'').length>12))text='Introduce un número válido para forzar en Ajustes.';
-  else text='Listo para el modo avión';
- }
- document.querySelectorAll('[data-offline-status]').forEach(element=>{element.textContent=text;element.classList.toggle('ready',text==='Listo para el modo avión')});
-}
-function checkOfflineFiles(){
- const worker=navigator.serviceWorker?.controller;if(!worker)return;
- const channel=new MessageChannel();channel.port1.onmessage=event=>{offlineFilesReady=event.data.ready===true;updateOfflineStatus();channel.port1.close()};
- worker.postMessage({type:'OFFLINE_STATUS'},[channel.port2]);
-}
-document.addEventListener('screenshot-storage',updateOfflineStatus);
-if('serviceWorker' in navigator){
- navigator.serviceWorker.addEventListener('controllerchange',checkOfflineFiles);
- navigator.serviceWorker.register('./sw.js',{updateViaCache:'none'}).then(()=>navigator.serviceWorker.ready).then(checkOfflineFiles).catch(()=>{document.querySelectorAll('[data-offline-status]').forEach(element=>element.textContent='Abre la aplicación una vez con conexión para guardarla y usarla sin internet.')});
-}else document.querySelectorAll('[data-offline-status]').forEach(element=>element.textContent='Este navegador no permite instalar la aplicación para usarla sin conexión.');
+document.getElementById('iphone-home').addEventListener('click',event=>{
+ if(document.body.dataset.screen!=='launcher')return;
+ scene.style.transformOrigin=`${event.clientX}px ${event.clientY}px`;
+ document.body.classList.add('app-opening');document.body.dataset.screen='calculator';scene.classList.add('opening');
+ openingTimer=setTimeout(()=>{scene.classList.remove('opening');document.body.classList.remove('app-opening')},450);
+});
+setupScreenshot(render).then(ui=>{screenshotUI=ui;saveForce(false)});
+if('serviceWorker' in navigator)navigator.serviceWorker.register('./sw.js',{updateViaCache:'none'}).catch(()=>{});

@@ -54,3 +54,24 @@ body:not(.screenshot-mode) .calculator,body:not(.screenshot-mode) #history{displ
 .force-settings{border:1px solid #414143;border-radius:12px;margin:16px 0 28px;padding:12px 16px}.force-settings legend{color:#ff9f0a;padding:0 6px}.force-settings input[type=text]{display:block;width:100%;font:24px -apple-system,sans-serif;border:1px solid #555;background:#151515;color:#fff;border-radius:10px;padding:12px;margin-top:8px}.settings h3{font-size:18px;margin:12px 0}
 #clear-skin{position:absolute;overflow:hidden;border-radius:50%;pointer-events:none}#clear-skin[hidden]{display:none}#clear-skin canvas{display:block;width:100%;height:100%}body[data-clear-state=ac] #clear-delete-image,body[data-clear-state=delete] #clear-ac-image{display:none}
 .offline-status{font-size:13px!important;line-height:1.4;color:#a5a5a5;margin-top:22px}.offline-status.ready{color:#86c994!important}
+
+/* The setup has only the controls needed for this routine. */
+#home-page{background:#000}
+#home-status:empty,#force-status:empty,#screenshot-status:empty{display:none}
+.settings{inset:calc(env(safe-area-inset-top,0px) + 24px) 16px auto;max-height:calc(100dvh - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px) - 48px);padding:24px}
+.settings .force-settings{border:0;padding:0;margin:24px 0}
+.settings .upload{padding:18px 12px;background:#353537;margin:14px 0;font-size:16px}
+.settings #settings-close{width:100%;background:#ff9f0a;color:#000;padding:16px;margin-top:24px;border-radius:12px}
+#calculator-scene{position:fixed;inset:0;visibility:hidden;pointer-events:none;background:#000}
+body[data-screen=calculator] #calculator-scene{visibility:visible;pointer-events:auto}
+body:not([data-screen=home]) #home-page{display:none}
+#iphone-home{position:fixed;inset:0;display:none;width:100%;height:100%;border-radius:0;background:#000;overflow:hidden;align-items:flex-start;justify-content:flex-start;transition:none}
+#iphone-home-image{display:block;width:100%;height:auto;max-width:none;pointer-events:none}
+body[data-screen=launcher] #iphone-home{display:block}
+body[data-screen=launcher] #settings-open{color:transparent}
+#calculator-scene.opening{animation:open-calculator .45s cubic-bezier(.2,.8,.2,1);pointer-events:none}
+@keyframes open-calculator{from{transform:scale(.12);opacity:.2;border-radius:90px}to{transform:scale(1);opacity:1;border-radius:0}}
+@media(prefers-reduced-motion:reduce){#calculator-scene.opening{animation:none}}
+#calculator-scene{z-index:1;overflow:hidden}
+body.app-opening #iphone-home{display:block;pointer-events:none;animation:fade-launcher .45s ease-out forwards}
+@keyframes fade-launcher{to{filter:blur(5px);opacity:.45}}

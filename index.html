@@ -15,44 +15,22 @@
 </head>
 <body data-screen="home">
   <section id="home-page" aria-label="Inicio">
-    <div class="home-content"><p class="home-eyebrow">CALCULADORA</p><h1>Cuando quieras.</h1><button id="start-routine">Comenzar</button><button id="home-settings">Ajustes</button><p id="home-status" role="status"></p><p class="offline-status" data-offline-status role="status">Comprobando la configuración sin conexión…</p></div>
+    <div class="home-content"><button id="start-routine">Comenzar</button><button id="home-settings">Ajustes</button><p id="home-status" role="status"></p></div>
   </section>
-  <div id="screenshot-stage" hidden aria-hidden="true"><img id="screenshot-image" alt=""><div id="clear-skin" hidden><canvas id="clear-ac-image"></canvas><canvas id="clear-delete-image"></canvas></div><div class="status-mask"></div><div class="home-mask"></div></div>
+  <button id="iphone-home" aria-label="Abrir calculadora"><img id="iphone-home-image" alt=""></button>
   <button id="settings-open" aria-label="Ajustes de la calculadora">⚙</button>
   <section id="settings-panel" class="panel settings" hidden aria-label="Ajustes de la calculadora">
-    <h2>Ajustes</h2><p class="offline-status" data-offline-status role="status">Comprobando la configuración sin conexión…</p>
-    <fieldset class="force-settings"><legend>Rutina</legend>
-      <label class="check"><input id="force-enabled" type="checkbox"> Forzar el resultado final</label>
-      <label>Número a forzar<input id="force-number" type="text" inputmode="decimal" placeholder="1000" autocomplete="off"></label>
-      <p>Introduce los dígitos sin separadores de miles. Puedes usar un punto o una coma para los decimales.</p>
-      <p>Introduce el primer número, un operador y el segundo número. Pulsa <strong>+</strong> para activar la entrada forzada. Los toques del espectador revelan los dígitos necesarios; <strong>=</strong> muestra el número a forzar. Una vez activada, el botón de borrar no hace nada y no permite retroceder.</p>
-      <p id="force-status" role="status"></p>
-    </fieldset>
-    <h3>Capturas de la calculadora</h3>
-    <p>Añade dos capturas de pantalla completa de este móvil. Los botones se detectan automáticamente. Las imágenes se guardan solo en este dispositivo.</p>
-    <label class="upload">Elegir captura con AC<input id="screenshot-upload" type="file" accept="image/png,image/jpeg,image/webp"></label>
-    <label class="upload">Elegir captura con el botón de borrar<input id="screenshot-delete-upload" type="file" accept="image/png,image/jpeg,image/webp"></label>
-    <p>Haz ambas capturas en el mismo móvil: una con cero y AC, y otra con un número escrito y el botón de borrar. Solo cambia el botón superior izquierdo; el resto de la pantalla permanece idéntico.</p>
-    <p id="screenshot-status" role="status">Añade las dos capturas antes de comenzar.</p>
-    <div id="screenshot-controls" hidden>
-      <label class="check"><input id="show-targets" type="checkbox"> Mostrar zonas táctiles</label>
-      <details><summary>Ajustar la alineación</summary>
-        <p>Los contornos de colores muestran las zonas táctiles. Ajusta la alineación solo si la detección automática no coincide con algún botón.</p>
-        <label>Posición horizontal del teclado <input type="range" id="skin-x" min="0" max="20" step="0.1"><output></output></label>
-        <label>Posición vertical del teclado <input type="range" id="skin-y" min="20" max="65" step="0.1"><output></output></label>
-        <label>Ancho del teclado <input type="range" id="skin-width" min="60" max="100" step="0.1"><output></output></label>
-        <label>Alto del teclado <input type="range" id="skin-height" min="25" max="65" step="0.1"><output></output></label>
-        <label>Posición vertical del resultado <input type="range" id="skin-resultY" min="15" max="60" step="0.1"><output></output></label>
-        <label>Alto del resultado <input type="range" id="skin-resultHeight" min="5" max="20" step="0.1"><output></output></label>
-        <label>Tamaño del texto del resultado <input type="range" id="skin-font" min="10" max="28" step="0.1"><output></output></label>
-      </details>
-      <label>Separador decimal <select id="skin-decimal"><option value=",">Coma (,)</option><option value=".">Punto (.)</option></select></label>
-      <button id="use-screenshot">Usar capturas</button>
-      <button id="remove-screenshot">Eliminar capturas</button>
-      <p>Mantén pulsada la zona vacía superior derecha para volver al inicio. El móvil muestra su barra de estado y su indicador de inicio.</p>
-    </div>
+    <h2>Ajustes</h2>
+    <label class="force-settings">Número a forzar<input id="force-number" type="text" inputmode="decimal" placeholder="1000" autocomplete="off"></label>
+    <p id="force-status" role="status"></p>
+    <label class="upload"><span id="home-upload-label">Inicio del iPhone</span><input id="home-screenshot-upload" aria-label="Captura del inicio del iPhone" type="file" accept="image/png,image/jpeg,image/webp"></label>
+    <label class="upload"><span id="ac-upload-label">Calculadora · AC</span><input id="screenshot-upload" aria-label="Captura de la calculadora con AC" type="file" accept="image/png,image/jpeg,image/webp"></label>
+    <label class="upload"><span id="delete-upload-label">Calculadora · Borrar</span><input id="screenshot-delete-upload" aria-label="Captura de la calculadora con borrar" type="file" accept="image/png,image/jpeg,image/webp"></label>
+    <p id="screenshot-status" role="status"></p>
     <button id="settings-close">Listo</button>
   </section>
+  <div id="calculator-scene">
+  <div id="screenshot-stage" hidden aria-hidden="true"><img id="screenshot-image" alt=""><div id="clear-skin" hidden><canvas id="clear-ac-image"></canvas><canvas id="clear-delete-image"></canvas></div><div class="status-mask"></div><div class="home-mask"></div></div>
   <button class="history-toggle" aria-label="Historial" id="history"><svg viewBox="0 0 26 22" aria-hidden="true"><path d="M8 3h17M8 11h17M8 19h17"/><g fill="currentColor" stroke="none"><circle cx="2" cy="3" r="1.7"/><circle cx="2" cy="11" r="1.7"/><circle cx="2" cy="19" r="1.7"/></g></svg></button>
   <section class="panel" id="history-panel" hidden aria-label="Historial de cálculos"><strong>Historial</strong><div id="history-items"><p>Sin cálculos</p></div><button id="close-history">Listo</button></section>
   <section class="panel" id="mode-panel" hidden aria-label="Modo de calculadora"><strong>Calculadora</strong><p>✓ Básica</p><button id="close-mode">Listo</button></section>
@@ -73,6 +51,7 @@
       <button class="operator" data-key="equals" aria-label="Igual"><svg viewBox="0 0 30 30" aria-hidden="true"><path d="M4 10h22M4 21h22"/></svg></button>
     </div>
   </main>
+  </div>
   <script type="module" src="./app.js"></script>
 </body>
 </html>
