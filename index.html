@@ -17,7 +17,7 @@
   <section id="home-page" aria-label="Home">
     <div class="home-content"><p class="home-eyebrow">CALCULATOR</p><h1>Ready when you are.</h1><button id="start-routine">Start</button><button id="home-settings">Settings</button><p id="home-status" role="status"></p></div>
   </section>
-  <div id="screenshot-stage" hidden aria-hidden="true"><img id="screenshot-image" alt=""><div class="status-mask"></div><div class="home-mask"></div></div>
+  <div id="screenshot-stage" hidden aria-hidden="true"><img id="screenshot-image" alt=""><div id="clear-skin" hidden><canvas id="clear-ac-image"></canvas><canvas id="clear-delete-image"></canvas></div><div class="status-mask"></div><div class="home-mask"></div></div>
   <button id="settings-open" aria-label="Calculator settings">⚙</button>
   <section id="settings-panel" class="panel settings" hidden aria-label="Calculator settings">
     <h2>Settings</h2>
@@ -30,7 +30,9 @@
     </fieldset>
     <h3>Calculator screenshot</h3>
     <p>Upload a full-screen screenshot from this phone. Buttons are detected automatically. Your image stays on this device.</p>
-    <label class="upload">Choose screenshot<input id="screenshot-upload" type="file" accept="image/png,image/jpeg,image/webp"></label>
+    <label class="upload">Choose AC screenshot<input id="screenshot-upload" type="file" accept="image/png,image/jpeg,image/webp"></label>
+    <label class="upload">Choose Delete screenshot<input id="screenshot-delete-upload" type="file" accept="image/png,image/jpeg,image/webp"></label>
+    <p>Take both on the same phone: zero with AC, then a typed number with Delete. Only the top-left button switches; the rest of the screen stays identical.</p>
     <p id="screenshot-status" role="status">Add your screenshot before starting.</p>
     <div id="screenshot-controls" hidden>
       <label class="check"><input id="show-targets" type="checkbox"> Show touch targets</label>

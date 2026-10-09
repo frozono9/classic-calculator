@@ -23,7 +23,24 @@ export function detectScreenshot(image){
  return config;
 }
 export async function setupScreenshot(render){
- let saved=null,url=null;const stage=$('screenshot-stage'),image=$('screenshot-image'),panel=$('settings-panel'),open=$('settings-open');
+ let saved=null,url=null,acImage=null,deleteImage=null;const stage=$('screenshot-stage'),image=$('screenshot-image'),panel=$('settings-panel'),open=$('settings-open');
+ async function decodeBlob(blob){const address=URL.createObjectURL(blob);try{const img=new Image();img.src=address;await img.decode();return img}finally{URL.revokeObjectURL(address)}}
+ function status(){
+  if(saved?.acBlob&&saved?.deleteBlob)return 'AC and Delete screenshots saved on this device.';
+  if(saved?.acBlob)return 'AC screenshot saved. Add the Delete screenshot.';
+  if(saved?.deleteBlob)return 'Delete screenshot saved. Add the AC screenshot.';
+  return saved?'Existing screenshot preserved. Add AC and Delete versions.':'Add both screenshots before starting.';
+ }
+ function paintButton(){
+  const patch=$('clear-skin');patch.hidden=!(acImage&&deleteImage);if(patch.hidden)return;
+  const c=saved.config,w=image.naturalWidth,h=image.naturalHeight;
+  const x=w*c.x/100,y=h*c.y/100,keyW=w*c.width/100*(1-3*c.gapX/100)/4,keyH=h*c.height/100*(1-4*c.gapY/100)/5;
+  Object.assign(patch.style,{left:c.x+'%',top:c.y+'%',width:keyW/w*100+'%',height:keyH/h*100+'%'});
+  for(const [id,img] of [['clear-ac-image',acImage],['clear-delete-image',deleteImage]]){
+   const canvas=$(id);canvas.width=Math.round(keyW);canvas.height=Math.round(keyH);
+   canvas.getContext('2d').drawImage(img,x,y,keyW,keyH,0,0,canvas.width,canvas.height);
+  }
+ }
  function position(){
   if(!saved)return;const c=saved.config;const w=document.documentElement.clientWidth,h=w*image.naturalHeight/image.naturalWidth,x=0,y=0;
   Object.assign(stage.style,{left:x+'px',top:y+'px',width:w+'px',height:h+'px'});
@@ -35,12 +52,13 @@ export async function setupScreenshot(render){
   const mode=$('mode');mode.hidden=c.oldLayout;mode.style.display=c.oldLayout?'none':'';
   document.querySelector('.zero').style.gridColumn=c.oldLayout?'span 2':'';
   const history=$('history');history.style.display=c.history?'':'none';if(c.history)Object.assign(history.style,{left:(x+w*c.history.x/100-3)+'px',top:(y+h*c.history.y/100-3)+'px'});
-  render();
+  paintButton();render();
  }
  function sliders(){for(const key of ['x','y','width','height','resultY','resultHeight','font']){const input=$('skin-'+key);input.value=saved.config[key];input.nextElementSibling.textContent=Number(saved.config[key]).toFixed(1)+'%'}$('skin-decimal').value=saved.config.decimal}
  async function activate(value){
-  if(url)URL.revokeObjectURL(url);saved=value;url=URL.createObjectURL(value.blob);image.src=url;await image.decode();
-  stage.hidden=false;document.body.classList.add('screenshot-mode');$('screenshot-controls').hidden=false;$('screenshot-status').textContent='Screenshot saved on this device.';sliders();position();
+  if(url)URL.revokeObjectURL(url);saved=value;url=URL.createObjectURL(value.acBlob||value.blob);image.src=url;await image.decode();
+  acImage=value.acBlob?await decodeBlob(value.acBlob):null;deleteImage=value.deleteBlob?await decodeBlob(value.deleteBlob):null;
+  stage.hidden=false;document.body.classList.add('screenshot-mode');$('screenshot-controls').hidden=false;$('screenshot-status').textContent=status();sliders();position();
  }
  async function persist(){try{await storage('put',saved)}catch{$('screenshot-status').textContent='Could not save the screenshot. Device storage may be full.'}}
  open.addEventListener('click',()=>{if(!open.classList.contains('concealed'))panel.hidden=false});
@@ -53,23 +71,31 @@ export async function setupScreenshot(render){
   const input=$('skin-'+key);input.addEventListener('input',()=>{saved.config[key]=Number(input.value);input.nextElementSibling.textContent=Number(input.value).toFixed(1)+'%';position()});input.addEventListener('change',persist);
  }
  $('skin-decimal').addEventListener('change',event=>{saved.config.decimal=event.target.value;position();persist()});
- $('screenshot-upload').addEventListener('change',async event=>{
+ for(const [id,slot] of [['screenshot-upload','acBlob'],['screenshot-delete-upload','deleteBlob']])$(id).addEventListener('change',async event=>{
   const file=event.target.files[0];if(!file)return;
   if(file.size>20*1024*1024){$('screenshot-status').textContent='Please choose an image smaller than 20 MB.';return}
-  let temp;
   try{
-   $('screenshot-status').textContent='Detecting buttons…';temp=URL.createObjectURL(file);const probe=new Image();probe.src=temp;await probe.decode();
+   $('screenshot-status').textContent='Checking screenshot…';const probe=await decodeBlob(file);
    if(probe.naturalHeight<probe.naturalWidth)throw new Error('Choose a portrait screenshot.');
-   const config=detectScreenshot(probe);await activate({blob:file,config});await persist();
-   $('screenshot-status').textContent='Buttons detected. Tap Use screenshot when ready.';
-  }catch(error){$('screenshot-status').textContent=error.message||'Could not load this image.'}finally{if(temp)URL.revokeObjectURL(temp);event.target.value=''}
+   const detected=detectScreenshot(probe);
+   const other=slot==='acBlob'?saved?.deleteBlob:saved?.acBlob;
+   if(other){
+    const otherImage=await decodeBlob(other);const otherConfig=detectScreenshot(otherImage);
+    if(probe.naturalWidth!==otherImage.naturalWidth||probe.naturalHeight!==otherImage.naturalHeight)throw new Error('Both screenshots must have the same dimensions. Take both on the same phone.');
+    if(['x','y','width','height'].some(key=>Math.abs(detected[key]-otherConfig[key])>.4))throw new Error('The buttons moved between screenshots. Take both in the same calculator mode.');
+   }
+   const candidate={...(saved||{}),[slot]:file};
+   candidate.blob=candidate.acBlob||file;
+   if(slot==='acBlob'||!candidate.config)candidate.config=detected;
+   await activate(candidate);await persist();$('screenshot-status').textContent=status();
+  }catch(error){$('screenshot-status').textContent=error.message||'Could not load this image.'}finally{event.target.value=''}
  });
  $('remove-screenshot').addEventListener('click',async()=>{
   try{await storage('delete')}catch{$('screenshot-status').textContent='Could not remove the saved screenshot.';return}
-  saved=null;if(url)URL.revokeObjectURL(url);stage.hidden=true;image.removeAttribute('src');document.body.classList.remove('screenshot-mode','show-targets');delete document.body.dataset.resultFont;delete document.body.dataset.decimal;
+  saved=null;acImage=null;deleteImage=null;$('clear-skin').hidden=true;if(url)URL.revokeObjectURL(url);stage.hidden=true;image.removeAttribute('src');document.body.classList.remove('screenshot-mode','show-targets');delete document.body.dataset.resultFont;delete document.body.dataset.decimal;
   document.querySelector('.calculator').removeAttribute('style');document.querySelector('.display').removeAttribute('style');document.querySelector('.keypad').removeAttribute('style');document.querySelector('.zero').style.gridColumn='';$('history').removeAttribute('style');$('mode').hidden=false;$('mode').style.display='';$('screenshot-controls').hidden=true;$('screenshot-status').textContent='Add your screenshot before starting.';open.classList.remove('concealed');render();
  });
  addEventListener('resize',position);
  try{const value=await storage('get');if(value){await activate(value);open.classList.add('concealed')}}catch{$('screenshot-status').textContent='Saved screenshot unavailable. Choose it again.'}
- return {hasScreenshot:()=>Boolean(saved),openSettings:()=>{panel.hidden=false;open.classList.remove('concealed')}};
+ return {hasScreenshot:()=>Boolean(saved?.acBlob&&saved?.deleteBlob),openSettings:()=>{panel.hidden=false;open.classList.remove('concealed')}};
 }

@@ -19,6 +19,7 @@ for(const kind of ['history','mode']){
 
 function render(){
   result.textContent=localized();
+  document.body.dataset.clearState=calculator.isEmpty?'ac':'delete';
   clear.innerHTML=calculator.isEmpty?'AC':backspaceIcon;
   clear.setAttribute('aria-label',calculator.isEmpty?'All clear':'Delete last digit');
   document.querySelectorAll('.operator').forEach(b=>{const selected=false;b.classList.toggle('selected',selected);b.setAttribute('aria-pressed',String(selected))});
@@ -49,12 +50,12 @@ document.addEventListener('click',event=>{
  if(document.body.dataset.screen!=='calculator'||routine.phase!=='entry')return;
  event.preventDefault();event.stopImmediatePropagation();
  const key=event.target.closest('button')?.dataset.key;
- handleKey(key==='equals'?'equals':'spectator');
+ handleKey(key==='equals'?'equals':key==='clear'?'clear':'spectator');
 },true);
 const keys={'+':'add','-':'subtract','*':'multiply','/':'divide','%':'percent','.':'decimal',',':'decimal','=':'equals',Enter:'equals',Escape:'clear',Delete:'clear'};
 document.addEventListener('keydown',event=>{
   if(document.body.dataset.screen!=='calculator'||event.metaKey||event.ctrlKey||event.altKey||event.target.closest('input,select,textarea'))return;
-  if(event.key==='Backspace'){event.preventDefault();if(routine.phase==='entry')handleKey('spectator');else{calculator.backspace();render()}return}
+  if(event.key==='Backspace'){event.preventDefault();if(routine.phase==='entry')handleKey('clear');else{calculator.backspace();render()}return}
   const key=/^\d$/.test(event.key)?event.key:keys[event.key];
   if(!key)return;event.preventDefault();handleKey(key);
   const button=document.querySelector(`[data-key="${key}"]`);button?.classList.add('pressed');
@@ -90,7 +91,7 @@ function goHome(){document.body.dataset.screen='home';routine.reset(null);render
 document.addEventListener('routine-home',goHome);
 document.getElementById('home-settings').addEventListener('click',()=>screenshotUI?.openSettings());
 document.getElementById('start-routine').addEventListener('click',()=>{
- if(!screenshotUI?.hasScreenshot()){document.getElementById('home-status').textContent='Add your calculator screenshot in Settings first.';screenshotUI?.openSettings();return}
+ if(!screenshotUI?.hasScreenshot()){document.getElementById('home-status').textContent='Add both AC and Delete screenshots in Settings first.';screenshotUI?.openSettings();return}
  if(forceEnabled.checked&&!saveForce()){screenshotUI.openSettings();forceNumber.focus();return}
  routine.reset(forceEnabled.checked?targetNumber():null);entries.length=0;document.getElementById('history-items').innerHTML='<p>No calculations</p>';
  document.body.dataset.screen='calculator';document.getElementById('settings-open').classList.add('concealed');document.getElementById('home-status').textContent='';render();
