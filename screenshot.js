@@ -46,6 +46,26 @@ export async function setupScreenshot(render){
    const canvas=$(id);canvas.width=Math.round(keyW);canvas.height=Math.round(keyH);
    canvas.getContext('2d').drawImage(img,x,y,keyW,keyH,0,0,canvas.width,canvas.height);
   }
+  // Repaint only the decimal glyph in its screenshot crop; keep the button intact.
+  const decimal=$('decimal-ready-skin');
+  const dx=x+2*(keyW+w*c.width/100*c.gapX/100),dy=y+4*(keyH+h*c.height/100*c.gapY/100);
+  Object.assign(decimal.style,{left:dx/w*100+'%',top:dy/h*100+'%',width:keyW/w*100+'%',height:keyH/h*100+'%'});
+  decimal.width=Math.round(keyW);decimal.height=Math.round(keyH);
+  const ctx=decimal.getContext('2d',{willReadFrequently:true});
+  ctx.drawImage(acImage,dx,dy,keyW,keyH,0,0,decimal.width,decimal.height);
+  const pixels=ctx.getImageData(0,0,decimal.width,decimal.height).data;
+  let left=decimal.width,right=0,top=decimal.height,bottom=0;
+  for(let py=Math.floor(decimal.height*.25);py<decimal.height*.87;py++)for(let px=Math.floor(decimal.width*.3);px<decimal.width*.7;px++){
+   const i=(py*decimal.width+px)*4;
+   if(pixels[i]>180&&pixels[i+1]>180&&pixels[i+2]>180){left=Math.min(left,px);right=Math.max(right,px);top=Math.min(top,py);bottom=Math.max(bottom,py)}
+  }
+  if(right>=left&&bottom>=top){
+   const i=(Math.floor(decimal.height*.25)*decimal.width+Math.floor(decimal.width*.5))*4;
+   ctx.fillStyle=`rgb(${pixels[i]},${pixels[i+1]},${pixels[i+2]})`;
+   ctx.fillRect(left-2,top-2,right-left+5,bottom-top+5);
+   const radius=Math.max(1,(right-left+1)*.34);
+   ctx.fillStyle='#fff';ctx.beginPath();ctx.arc((left+right)/2,top+radius,radius,0,Math.PI*2);ctx.fill();
+  }
  }
  function position(){
   if(!saved)return;const c=saved.config;const w=document.documentElement.clientWidth,h=w*image.naturalHeight/image.naturalWidth,x=0,y=0;

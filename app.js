@@ -19,6 +19,7 @@ for(const kind of ['history','mode']){
 
 function render(){
   document.getElementById('spectator-taps').hidden=document.body.dataset.screen!=='calculator'||routine.phase!=='entry';
+  document.body.dataset.correctionReady=String(routine.phase==='entry'&&routine.index>=routine.remainder.length);
   result.textContent=localized();
   document.getElementById('calculation-status').textContent=routine.issue;
   const expression=document.getElementById('expression');
