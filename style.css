@@ -86,3 +86,5 @@ html.launcher-background body{background:transparent;min-height:100lvh}
 #expression::-webkit-scrollbar{display:none}
 
 #calculation-status{position:absolute;left:24px;right:24px;top:calc(env(safe-area-inset-top,0px) + 90px);margin:0;padding:14px;border-radius:12px;background:#292929;color:#fff;font-size:15px;line-height:1.4;z-index:9}#calculation-status:empty{display:none}
+
+#spectator-taps{position:fixed;left:0;top:0;width:100vw;height:100vh;height:100lvh;margin:0;padding:0;border:0;border-radius:0;background:transparent!important;color:transparent;z-index:20;touch-action:manipulation}#spectator-taps[hidden]{display:none}

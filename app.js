@@ -18,6 +18,7 @@ for(const kind of ['history','mode']){
 }
 
 function render(){
+  document.getElementById('spectator-taps').hidden=document.body.dataset.screen!=='calculator'||routine.phase!=='entry';
   result.textContent=localized();
   document.getElementById('calculation-status').textContent=routine.issue;
   const expression=document.getElementById('expression');
@@ -50,11 +51,24 @@ function recordResult(){
   for(const value of entries.slice(0,30)){const entry=document.createElement('div');entry.className='entry';entry.textContent=value;items.append(entry)}
 }
 document.querySelector('.keypad').addEventListener('click',event=>{const key=event.target.closest('button')?.dataset.key;if(key)handleKey(key)});
+// An actual full-screen button makes taps on empty areas reliable on iOS too.
+function spectatorButton(x,y){
+ return [...document.querySelectorAll('.keypad button')].find(button=>{
+  const r=button.getBoundingClientRect();
+  if(!r.width||!r.height)return false;
+  const dx=(x-r.left-r.width/2)/(r.width/2),dy=(y-r.top-r.height/2)/(r.height/2);
+  return dx*dx+dy*dy<=1;
+ });
+}
+document.getElementById('spectator-taps').addEventListener('pointerdown',event=>{
+ const button=spectatorButton(event.clientX,event.clientY);
+ if(button?.dataset.key!=='clear')button?.classList.add('pressed');
+});
 // During the spectator phase, consume every screen tap before other controls can act.
 document.addEventListener('click',event=>{
  if(document.body.dataset.screen!=='calculator'||routine.phase!=='entry')return;
  event.preventDefault();event.stopImmediatePropagation();
- const key=event.target.closest('button')?.dataset.key;
+ const key=spectatorButton(event.clientX,event.clientY)?.dataset.key;
  handleKey(key==='equals'?'equals':key==='clear'?'clear':'spectator');
 },true);
 const keys={'+':'add','-':'subtract','*':'multiply','/':'divide','%':'percent','.':'decimal',',':'decimal','=':'equals',Enter:'equals',Escape:'clear',Delete:'clear'};
