@@ -6,7 +6,7 @@ body{touch-action:manipulation;-webkit-user-select:none;user-select:none}
 .display{height:29.8cqw;display:flex;align-items:flex-start;justify-content:flex-end;padding:4.2cqw 0 0 0;overflow:hidden;touch-action:pan-y}
 #result{font-size:20.1cqw;font-weight:400;line-height:1.1;letter-spacing:-.15cqw;white-space:nowrap;transform-origin:right center}
 .keypad{display:grid;grid-template-columns:repeat(4,1fr);gap:var(--gap)}
-button{appearance:none;-webkit-appearance:none;border:0;padding:0;background:#2a2a2c;color:#fff;border-radius:50%;height:var(--key);font:400 10.05cqw/1 -apple-system,BlinkMacSystemFont,"Helvetica Neue",sans-serif;display:flex;align-items:center;justify-content:center;cursor:pointer;touch-action:manipulation;outline:none;transition:background-color .35s ease}
+button{appearance:none;-webkit-appearance:none;border:0;padding:0;background:#2a2a2c;color:#fff;border-radius:50%;height:var(--key);font:400 10.05cqw/1 -apple-system,BlinkMacSystemFont,"Helvetica Neue",sans-serif;display:flex;align-items:center;justify-content:center;cursor:pointer;touch-action:manipulation;outline:none;transition:background-color .12s ease}
 button.utility{background:#5c5b60;color:#fff;font-size:11.17cqw}
 button.operator{background:#ff9f0a}
 button svg{width:8.1cqw;height:8.1cqw;fill:none;stroke:currentColor;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
@@ -33,7 +33,7 @@ button:focus-visible{outline:2px solid #fff;outline-offset:3px}
 .screenshot-mode .keypad{position:absolute;display:grid;width:100%;height:100%;gap:var(--skin-gap-y) var(--skin-gap-x);grid-template-rows:repeat(5,1fr)}
 .screenshot-mode .keypad button{height:auto;width:100%;background:transparent!important;color:transparent!important;transition:none;position:relative}
 .screenshot-mode .keypad button>*{visibility:hidden}
-.screenshot-mode .keypad button::after{content:'';position:absolute;inset:0;border-radius:inherit;background:#fff;opacity:0;transition:opacity .35s ease-out;pointer-events:none}
+.screenshot-mode .keypad button::after{content:'';position:absolute;inset:0;border-radius:inherit;background:#fff;opacity:0;transition:opacity .12s ease-out;pointer-events:none}
 .screenshot-mode .keypad button.pressed::after,.screenshot-mode .keypad button:active::after{opacity:.36;transition:none}
 .screenshot-mode .keypad button.operator.pressed::after,.screenshot-mode .keypad button.operator:active::after{opacity:.32}
 
@@ -90,3 +90,6 @@ html.launcher-background body{background:transparent;min-height:100lvh}
 #spectator-taps{position:fixed;left:0;top:0;width:100vw;height:100vh;height:100lvh;margin:0;padding:0;border:0;border-radius:0;background:transparent!important;color:transparent;z-index:20;touch-action:manipulation}#spectator-taps[hidden]{display:none}
 
 #decimal-ready-skin{position:absolute;display:none;border-radius:50%;pointer-events:none}body[data-correction-ready=true] #decimal-ready-skin{display:block}
+
+.screenshot-mode .keypad button.operator.selected::after{background:#fff;opacity:1;transition:none}
+.screenshot-mode .keypad button.operator.selected svg{visibility:visible;color:#ff9f0a;position:relative;z-index:1}

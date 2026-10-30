@@ -26,9 +26,10 @@ function render(){
   expression.textContent=calculator.formattedExpression(document.body.dataset.decimal==='.'?'.':',');
   expression.scrollLeft=expression.scrollWidth;
   document.body.dataset.clearState=calculator.showsAC?'ac':'delete';
-  clear.innerHTML=calculator.showsAC?'AC':backspaceIcon;
+  const clearState=calculator.showsAC?'ac':'delete';
+  if(clear.dataset.state!==clearState){clear.innerHTML=calculator.showsAC?'AC':backspaceIcon;clear.dataset.state=clearState;}
   clear.setAttribute('aria-label',calculator.showsAC?'Borrar todo':'Borrar el último dígito');
-  document.querySelectorAll('.operator').forEach(b=>{const selected=false;b.classList.toggle('selected',selected);b.setAttribute('aria-pressed',String(selected))});
+  document.querySelectorAll('.operator').forEach(b=>{const selected=calculator.waiting&&calculator.operator===b.dataset.key;b.classList.toggle('selected',selected);b.setAttribute('aria-pressed',String(selected))});
   const font=document.body.classList.contains('screenshot-mode')?Number(document.body.dataset.resultFont||18.5):20.1;
   result.style.fontSize=`${font}cqw`;
   const available=result.parentElement.clientWidth-parseFloat(getComputedStyle(result.parentElement).paddingLeft)*2;
@@ -51,7 +52,7 @@ function recordResult(){
   const items=document.querySelector('#history-items');items.replaceChildren();
   for(const value of entries.slice(0,30)){const entry=document.createElement('div');entry.className='entry';entry.textContent=value;items.append(entry)}
 }
-document.querySelector('.keypad').addEventListener('click',event=>{const key=event.target.closest('button')?.dataset.key;if(key)handleKey(key)});
+document.querySelector('.keypad').addEventListener('click',event=>{if(event.detail!==0)return;const key=event.target.closest('button')?.dataset.key;if(key)handleKey(key)});
 // An actual full-screen button makes taps on empty areas reliable on iOS too.
 function spectatorButton(x,y){
  return [...document.querySelectorAll('.keypad button')].find(button=>{
@@ -62,11 +63,15 @@ function spectatorButton(x,y){
  });
 }
 document.getElementById('spectator-taps').addEventListener('pointerdown',event=>{
+ if(!event.isPrimary||event.button!==0)return;
+ event.preventDefault();
  const button=spectatorButton(event.clientX,event.clientY);
  if(button?.dataset.key!=='clear')button?.classList.add('pressed');
+ handleKey(button?.dataset.key==='equals'?'equals':button?.dataset.key==='clear'?'clear':'spectator');
 });
 // During the spectator phase, consume every screen tap before other controls can act.
 document.addEventListener('click',event=>{
+ if(event.detail>0&&event.target.closest('.keypad,#spectator-taps')){event.preventDefault();event.stopImmediatePropagation();return;}
  if(document.body.dataset.screen!=='calculator'||routine.phase!=='entry')return;
  event.preventDefault();event.stopImmediatePropagation();
  const key=spectatorButton(event.clientX,event.clientY)?.dataset.key;
@@ -82,8 +87,11 @@ document.addEventListener('keydown',event=>{
 });
 const keypad=document.querySelector('.keypad');
 keypad.addEventListener('pointerdown',event=>{
+ if(!event.isPrimary||event.button!==0)return;
+ event.preventDefault();
  const button=event.target.closest('button');if(!button)return;
  button.classList.add('pressed');button.setPointerCapture(event.pointerId);
+ if(button.dataset.key)handleKey(button.dataset.key);
 });
 function releaseButtons(){document.querySelectorAll('.keypad .pressed').forEach(button=>button.classList.remove('pressed'))}
 for(const event of ['pointerup','pointercancel','keyup'])document.addEventListener(event,releaseButtons);
